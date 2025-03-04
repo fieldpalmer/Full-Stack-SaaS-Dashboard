@@ -68,7 +68,7 @@ export const GenreRatingChart: React.FC<GenreRatingChartProps> = ({ data }) => {
 export const MovieRuntimeChart: React.FC<MovieRuntimeChartProps> = ({ data }) => {
    return (
       <div className='bg-gray-800 p-3 rounded-lg shadow-md'>
-         <ResponsiveContainer width='100%' height={250}>
+         <ResponsiveContainer width='100%' height={200}>
             <LineChart data={data}>
                {' '}
                {/* Increased bottom margin */}

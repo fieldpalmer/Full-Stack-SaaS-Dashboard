@@ -3,12 +3,15 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import AuthContext from '../context/AuthContext';
 import { MovieRuntimeChart, StatsWidget } from '../components/Charts';
+import Top10Lists from '../components/Top10Lists.tsx';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 interface Movie {
    title: string;
-   // add other movie properties as needed
+   year: number;
+   rating?: number;
+   runtime?: number;
 }
 
 interface MovieStats {
@@ -114,40 +117,46 @@ export default function Dashboard() {
                </button>
             </header>
 
-            <div className='px-6 mx-6 mt-6 bg-gray-800 p-4 rounded-lg'>
-               <div className='flex justify-between text-sm text-gray-400'>
-                  <span>{yearRange[0]}</span>
-                  <span>{yearRange[1]}</span>
+            <div className='m-6 bg-gray-800 px-4 rounded-lg flex flex-col md:flex-row items-center gap-6'>
+               {/* 📊 Stats Widgets (Fixed width for consistency) */}
+               <div className='flex gap-3'>
+                  <StatsWidget title='Movies' value={stats.totalMovies.toString()} />
+                  <StatsWidget title='Avg Runtime (mins)' value={stats.avgRuntime} />
+                  <StatsWidget title='Avg Rating' value={stats.avgRating} />
                </div>
-               <Slider
-                  range
-                  min={stats.minYear}
-                  max={stats.maxYear}
-                  value={yearRange}
-                  onChange={(value) => setYearRange(value as [number, number])}
-                  trackStyle={[{ backgroundColor: '#4f46e5' }]}
-                  handleStyle={[
-                     { borderColor: '#4f46e5', backgroundColor: '#4f46e5' },
-                     { borderColor: '#4f46e5', backgroundColor: '#4f46e5' }
-                  ]}
-               />
-            </div>
 
-            <div className='p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-               <StatsWidget title='Movies' value={stats.totalMovies.toString()} />
-               <StatsWidget title='Avg Runtime (mins)' value={stats.avgRuntime} />
-               <StatsWidget title='Avg Rating' value={stats.avgRating} />
+               <div className='flex-1'>
+                  <div className='flex justify-between text-sm text-gray-400 mb-2'>
+                     <span>{yearRange[0]}</span>
+                     <span>{yearRange[1]}</span>
+                  </div>
+                  <Slider
+                     range
+                     min={stats.minYear}
+                     max={stats.maxYear}
+                     value={yearRange}
+                     onChange={(value) => setYearRange(value as [number, number])}
+                     trackStyle={[{ backgroundColor: '#4f46e5' }]}
+                     handleStyle={[
+                        { borderColor: '#4f46e5', backgroundColor: '#4f46e5' },
+                        { borderColor: '#4f46e5', backgroundColor: '#4f46e5' }
+                     ]}
+                  />
+               </div>
             </div>
 
             <div className='px-6 pb-6'>
                <MovieRuntimeChart data={runtimeData} />
             </div>
 
+            {/* <GenreRatingChart data={stats.genreAverages} /> */}
+
             <div className='px-6'>
-               {/* <GenreRatingChart data={stats.genreAverages} /> */}
-               {stats.topRatedMovies.map((el: Movie) => (
-                  <p key={el.title}>{el.title}</p>
-               ))}
+               <Top10Lists
+                  topRatedMovies={stats.topRatedMovies}
+                  topGenres={stats.topGenres}
+                  longestMovies={stats.longestMovies}
+               />
             </div>
          </div>
       </div>
