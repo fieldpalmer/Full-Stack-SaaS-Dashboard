@@ -9,11 +9,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5001;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
 const client = new MongoClient(process.env.MONGO_URI);
 let db;
 
@@ -103,9 +101,49 @@ app.get('/api/users', authenticateToken, async (req, res) => {
 
 app.get('/api/movies', authenticateToken, async (req, res) => {
    try {
-      const movies = await db.collection('movies').find().toArray();
-      res.json(movies);
+      const moviesCollection = db.collection('movies');
+
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const sortField = req.query.sortField || 'year';
+      const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
+      const genreFilter = req.query.genre ? { genres: req.query.genre } : {};
+      const ratingFilter = req.query.rating ? { rated: req.query.rating } : {};
+      const yearFilter = req.query.year ? { year: parseInt(req.query.year) } : {};
+
+      const filterQuery = { ...genreFilter, ...ratingFilter, ...yearFilter };
+
+      const movies = await moviesCollection
+         .find(filterQuery, {
+            projection: {
+               title: 1,
+               year: 1,
+               runtime: 1,
+               genres: 1,
+               directors: 1,
+               rated: 1,
+               'tomatoes.viewer.meter': 1
+            }
+         })
+         .sort({ [sortField]: sortOrder })
+         .skip(skip)
+         .limit(limit)
+         .toArray();
+
+      const totalMovies = await moviesCollection.countDocuments(filterQuery);
+
+      res.json({
+         movies: movies.map((movie) => ({
+            ...movie,
+            viewerTomatoesRating: movie.tomatoes?.viewer?.meter || 'N/A' // ✅ Ensure safe access
+         })),
+         totalPages: Math.ceil(totalMovies / limit),
+         currentPage: page
+      });
    } catch (err) {
+      console.error('❌ Error fetching movies:', err.message);
       res.status(500).json({ error: err.message });
    }
 });
@@ -117,39 +155,60 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
          throw new Error('Database connection is not established.');
       }
 
-      // Log when API starts
       console.log('Fetching movie statistics...');
 
-      // Get total count of movies
-      const totalMovies = await moviesCollection.countDocuments();
-      console.log('Total movies:', totalMovies);
+      // Extract query parameters for filtering
+      const startYear = parseInt(req.query.startYear) || 1900;
+      const endYear = parseInt(req.query.endYear) || new Date().getFullYear();
 
-      // Calculate average runtime
+      console.log(`Filtering data between ${startYear} and ${endYear}...`);
+
+      // Apply filtering for min/max year aggregation
+      const yearAggregation = await moviesCollection
+         .aggregate([
+            { $match: { year: { $exists: true, $gte: startYear, $lte: endYear } } },
+            {
+               $group: {
+                  _id: null,
+                  minYear: { $min: '$year' },
+                  maxYear: { $max: '$year' }
+               }
+            }
+         ])
+         .toArray();
+
+      const minYear = yearAggregation.length ? yearAggregation[0].minYear : startYear;
+      const maxYear = yearAggregation.length ? yearAggregation[0].maxYear : endYear;
+
+      // Apply filtering for runtime aggregation
       const runtimeAggregation = await moviesCollection
          .aggregate([
-            { $match: { runtime: { $gt: 0 } } },
+            { $match: { year: { $gte: startYear, $lte: endYear }, runtime: { $gt: 0 } } },
             { $group: { _id: null, avgRuntime: { $avg: '$runtime' } } }
          ])
          .toArray();
       const avgRuntime = runtimeAggregation.length
          ? runtimeAggregation[0].avgRuntime.toFixed(2)
          : '0';
-      console.log('Average runtime:', avgRuntime);
 
-      // Calculate average rating (from `tomatoes.viewer.meter`)
+      // Apply filtering for average rating
       const ratingAggregation = await moviesCollection
          .aggregate([
-            { $match: { 'tomatoes.viewer.meter': { $gt: 0 } } },
+            {
+               $match: {
+                  year: { $gte: startYear, $lte: endYear },
+                  'tomatoes.viewer.meter': { $gt: 0 }
+               }
+            },
             { $group: { _id: null, avgRating: { $avg: '$tomatoes.viewer.meter' } } }
          ])
          .toArray();
       const avgRating = ratingAggregation.length ? ratingAggregation[0].avgRating.toFixed(2) : '0';
-      console.log('Average rating:', avgRating);
 
-      // Aggregate runtime data over years for the line chart
+      // Apply filtering for runtime over years
       const runtimeOverYears = await moviesCollection
          .aggregate([
-            { $match: { year: { $gte: 1900 }, runtime: { $gt: 0 } } },
+            { $match: { year: { $gte: startYear, $lte: endYear }, runtime: { $gt: 0 } } },
             { $group: { _id: '$year', avgRuntime: { $avg: '$runtime' } } },
             { $sort: { _id: 1 } }
          ])
@@ -157,14 +216,163 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
 
       console.log('Runtime data fetched:', runtimeOverYears.length, 'entries');
 
+      // Apply filtering for genre averages
+      const genreAverages = await moviesCollection
+         .aggregate([
+            {
+               $match: {
+                  year: { $gte: startYear, $lte: endYear },
+                  'tomatoes.viewer.meter': { $exists: true }
+               }
+            },
+            { $unwind: '$genres' }, // Separate multi-genre movies into multiple docs
+            {
+               $group: {
+                  _id: '$genres',
+                  avgRating: { $avg: '$tomatoes.viewer.meter' }
+               }
+            },
+            { $sort: { avgRating: -1 } } // Sort highest to lowest rating
+         ])
+         .toArray();
+
+      const formattedGenreAverages = genreAverages.map((g) => ({
+         genre: g._id,
+         avgRating: Math.round(g.avgRating * 10) / 10 // Round to 1 decimal
+      }));
+
+      console.log(
+         `Filtered Genre Averages (${startYear}-${endYear}):`,
+         formattedGenreAverages.length,
+         'genres'
+      );
+
       res.json({
-         totalMovies,
+         totalMovies: await moviesCollection.countDocuments({
+            year: { $gte: startYear, $lte: endYear }
+         }),
+         minYear,
+         maxYear,
          avgRuntime,
          avgRating,
-         runtimeOverYears
+         runtimeOverYears,
+         genreAverages: formattedGenreAverages // ✅ Filtered by selected year range
       });
    } catch (err) {
       console.error('❌ Error fetching movie stats:', err.message);
+      res.status(500).json({ error: err.message });
+   }
+});
+
+// Get Unique Actors (Cast)
+app.get('/api/actors', authenticateToken, async (req, res) => {
+   try {
+      const moviesCollection = db.collection('movies');
+
+      const actorsAggregation = await moviesCollection
+         .aggregate([
+            { $unwind: '$cast' },
+            {
+               $group: {
+                  _id: '$cast',
+                  movieCount: { $sum: 1 },
+                  avgRuntime: { $avg: '$runtime' },
+                  avgRating: { $avg: '$tomatoes.viewer.meter' },
+                  years: { $push: '$year' }
+               }
+            },
+            { $sort: { movieCount: -1 } },
+            { $limit: 50 }
+         ])
+         .toArray();
+
+      // Calculate median year
+      actorsAggregation.forEach((actor) => {
+         const sortedYears = actor.years.filter((y) => y).sort((a, b) => a - b);
+         actor.medianYear = sortedYears.length
+            ? sortedYears[Math.floor(sortedYears.length / 2)]
+            : 'N/A';
+         delete actor.years;
+      });
+
+      res.json(actorsAggregation);
+   } catch (err) {
+      console.error('❌ Error fetching actors:', err.message);
+      res.status(500).json({ error: err.message });
+   }
+});
+
+// Get Unique Directors
+app.get('/api/directors', authenticateToken, async (req, res) => {
+   try {
+      const moviesCollection = db.collection('movies');
+
+      const directorsAggregation = await moviesCollection
+         .aggregate([
+            { $unwind: '$directors' },
+            {
+               $group: {
+                  _id: '$directors',
+                  movieCount: { $sum: 1 },
+                  avgRuntime: { $avg: '$runtime' },
+                  avgRating: { $avg: '$tomatoes.viewer.meter' },
+                  years: { $push: '$year' }
+               }
+            },
+            { $sort: { movieCount: -1 } },
+            { $limit: 50 }
+         ])
+         .toArray();
+
+      // Calculate median year
+      directorsAggregation.forEach((director) => {
+         const sortedYears = director.years.filter((y) => y).sort((a, b) => a - b);
+         director.medianYear = sortedYears.length
+            ? sortedYears[Math.floor(sortedYears.length / 2)]
+            : 'N/A';
+         delete director.years;
+      });
+
+      res.json(directorsAggregation);
+   } catch (err) {
+      console.error('❌ Error fetching directors:', err.message);
+      res.status(500).json({ error: err.message });
+   }
+});
+
+// Get Unique Genres
+app.get('/api/genres', authenticateToken, async (req, res) => {
+   try {
+      const moviesCollection = db.collection('movies');
+
+      const genresAggregation = await moviesCollection
+         .aggregate([
+            { $unwind: '$genres' },
+            {
+               $group: {
+                  _id: '$genres',
+                  movieCount: { $sum: 1 },
+                  avgRuntime: { $avg: '$runtime' },
+                  avgRating: { $avg: '$tomatoes.viewer.meter' },
+                  years: { $push: '$year' }
+               }
+            },
+            { $sort: { movieCount: -1 } }
+         ])
+         .toArray();
+
+      // Calculate median year
+      genresAggregation.forEach((genre) => {
+         const sortedYears = genre.years.filter((y) => y).sort((a, b) => a - b);
+         genre.medianYear = sortedYears.length
+            ? sortedYears[Math.floor(sortedYears.length / 2)]
+            : 'N/A';
+         delete genre.years;
+      });
+
+      res.json(genresAggregation);
+   } catch (err) {
+      console.error('❌ Error fetching genres:', err.message);
       res.status(500).json({ error: err.message });
    }
 });

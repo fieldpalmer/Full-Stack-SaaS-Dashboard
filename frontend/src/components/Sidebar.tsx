@@ -12,6 +12,14 @@ export default function Sidebar() {
             </li>
             <li className='mb-4'>
                <Link
+                  to='/dashboard/movies-table'
+                  className='block p-3 bg-gray-700 rounded hover:bg-gray-600'
+               >
+                  Movies
+               </Link>
+            </li>
+            <li className='mb-4'>
+               <Link
                   to='/dashboard/actors'
                   className='block p-3 bg-gray-700 rounded hover:bg-gray-600'
                >
