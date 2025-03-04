@@ -53,6 +53,7 @@ export default function Register() {
             <button className='bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded w-full'>
                Register
             </button>
+            <hr className='my-3' />
             <p>
                Already have an account? Sign in <Link to='/login'>here</Link>
             </p>
