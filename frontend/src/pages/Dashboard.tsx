@@ -25,7 +25,7 @@ export default function Dashboard() {
       maxYear: new Date().getFullYear(),
       genreAverages: []
    });
-   const [runtimeData, setRuntimeData] = useState<{ year: number; avgRuntime: number }[]>([]);
+   const [runtimeData, setRuntimeData] = useState<{ _id: number; avgRuntime: number }[]>([]);
    const [yearRange, setYearRange] = useState<[number, number]>([1900, new Date().getFullYear()]);
 
    useEffect(() => {

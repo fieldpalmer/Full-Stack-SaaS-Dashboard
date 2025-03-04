@@ -1,48 +1,37 @@
-import { Link } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 
-export default function Sidebar() {
+const Sidebar = () => {
+   const location = useLocation(); // ✅ Get the current route
+
+   const links = [
+      { name: 'Overview', path: '/dashboard' },
+      { name: 'Movies', path: '/dashboard/movies-table' },
+      { name: 'Actors', path: '/dashboard/actors' },
+      { name: 'Directors', path: '/dashboard/directors' },
+      { name: 'Genres', path: '/dashboard/genres' }
+   ];
+
    return (
-      <nav className='w-64 bg-gray-800 h-full p-5 shadow-lg'>
-         <h1 className='text-2xl font-bold text-white mb-6'>Movies</h1>
-         <ul>
-            <li className='mb-4'>
-               <Link to='/dashboard' className='block p-3 bg-gray-700 rounded hover:bg-gray-600'>
-                  Overview
-               </Link>
-            </li>
-            <li className='mb-4'>
-               <Link
-                  to='/dashboard/movies-table'
-                  className='block p-3 bg-gray-700 rounded hover:bg-gray-600'
-               >
-                  Movies
-               </Link>
-            </li>
-            <li className='mb-4'>
-               <Link
-                  to='/dashboard/actors'
-                  className='block p-3 bg-gray-700 rounded hover:bg-gray-600'
-               >
-                  Actors
-               </Link>
-            </li>
-            <li className='mb-4'>
-               <Link
-                  to='/dashboard/directors'
-                  className='block p-3 bg-gray-700 rounded hover:bg-gray-600'
-               >
-                  Directors
-               </Link>
-            </li>
-            <li className='mb-4'>
-               <Link
-                  to='/dashboard/genres'
-                  className='block p-3 bg-gray-700 rounded hover:bg-gray-600'
-               >
-                  Genres
-               </Link>
-            </li>
-         </ul>
-      </nav>
+      <div className='h-screen w-64 bg-gray-900 text-white p-4'>
+         <h2 className='text-2xl font-bold mb-6'>Movies</h2>
+         <nav className='flex flex-col space-y-2'>
+            {links.map((link) => {
+               const isActive = location.pathname === link.path; // ✅ Check if link is active
+               return (
+                  <NavLink
+                     key={link.path}
+                     to={link.path}
+                     className={`px-4 py-2 rounded-lg transition duration-300 ${
+                        isActive ? 'bg-purple-500 text-white font-bold' : 'hover:bg-gray-700'
+                     }`}
+                  >
+                     {link.name}
+                  </NavLink>
+               );
+            })}
+         </nav>
+      </div>
    );
-}
+};
+
+export default Sidebar;
