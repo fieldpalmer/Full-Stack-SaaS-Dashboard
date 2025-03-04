@@ -216,6 +216,41 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
 
       console.log('Runtime data fetched:', runtimeOverYears.length, 'entries');
 
+      // Top 10 Highest Rated Movies
+      const topRatedMovies = await moviesCollection
+         .find({
+            year: { $gte: startYear, $lte: endYear },
+            'tomatoes.viewer.meter': { $exists: true }
+         })
+         .sort({ 'tomatoes.viewer.meter': -1 }) // Sort by highest rating
+         .limit(10)
+         .project({ title: 1, year: 1, 'tomatoes.viewer.meter': 1 })
+         .toArray();
+
+      // Top 10 Most Frequent Genres
+      const topGenres = await moviesCollection
+         .aggregate([
+            { $match: { year: { $gte: startYear, $lte: endYear } } },
+            { $unwind: '$genres' }, // Expand multi-genre movies
+            {
+               $group: {
+                  _id: '$genres',
+                  count: { $sum: 1 } // Count movies per genre
+               }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 10 }
+         ])
+         .toArray();
+
+      // Top 10 Longest Movies
+      const longestMovies = await moviesCollection
+         .find({ year: { $gte: startYear, $lte: endYear }, runtime: { $gt: 0 } })
+         .sort({ runtime: -1 }) // Sort by longest runtime
+         .limit(10)
+         .project({ title: 1, year: 1, runtime: 1 })
+         .toArray();
+
       // Apply filtering for genre averages
       const genreAverages = await moviesCollection
          .aggregate([
@@ -256,6 +291,9 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
          avgRuntime,
          avgRating,
          runtimeOverYears,
+         topRatedMovies,
+         topGenres,
+         longestMovies,
          genreAverages: formattedGenreAverages // ✅ Filtered by selected year range
       });
    } catch (err) {

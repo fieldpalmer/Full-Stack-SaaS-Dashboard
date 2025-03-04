@@ -2,9 +2,14 @@ import { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import AuthContext from '../context/AuthContext';
-import { MovieRuntimeChart, GenreRatingChart, StatsWidget } from '../components/Charts';
+import { MovieRuntimeChart, StatsWidget } from '../components/Charts';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+
+interface Movie {
+   title: string;
+   // add other movie properties as needed
+}
 
 interface MovieStats {
    totalMovies: number;
@@ -12,6 +17,9 @@ interface MovieStats {
    avgRating: string;
    minYear: number;
    maxYear: number;
+   topRatedMovies: Movie[];
+   topGenres: [];
+   longestMovies: [];
    genreAverages: { genre: string; avgRating: number }[];
 }
 
@@ -23,6 +31,9 @@ export default function Dashboard() {
       avgRating: '0',
       minYear: 1900,
       maxYear: new Date().getFullYear(),
+      topRatedMovies: [],
+      topGenres: [],
+      longestMovies: [],
       genreAverages: []
    });
    const [runtimeData, setRuntimeData] = useState<{ _id: number; avgRuntime: number }[]>([]);
@@ -42,6 +53,9 @@ export default function Dashboard() {
                avgRating: data.avgRating,
                minYear: data.minYear,
                maxYear: data.maxYear,
+               topRatedMovies: data.topRatedMovies,
+               topGenres: data.topGenres,
+               longestMovies: data.longestMovies,
                genreAverages: data.genreAverages
             });
 
@@ -72,6 +86,9 @@ export default function Dashboard() {
                avgRating: data.avgRating,
                minYear: stats.minYear,
                maxYear: stats.maxYear,
+               topRatedMovies: data.topRatedMovies,
+               topGenres: data.topGenres,
+               longestMovies: data.longestMovies,
                genreAverages: data.genreAverages
             });
 
@@ -127,7 +144,10 @@ export default function Dashboard() {
             </div>
 
             <div className='px-6'>
-               <GenreRatingChart data={stats.genreAverages} />
+               {/* <GenreRatingChart data={stats.genreAverages} /> */}
+               {stats.topRatedMovies.map((el: Movie) => (
+                  <p key={el.title}>{el.title}</p>
+               ))}
             </div>
          </div>
       </div>
