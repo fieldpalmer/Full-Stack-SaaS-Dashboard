@@ -157,13 +157,11 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
 
       console.log('Fetching movie statistics...');
 
-      // Extract query parameters for filtering
       const startYear = parseInt(req.query.startYear) || 1900;
       const endYear = parseInt(req.query.endYear) || new Date().getFullYear();
 
       console.log(`Filtering data between ${startYear} and ${endYear}...`);
 
-      // Apply filtering for min/max year aggregation
       const yearAggregation = await moviesCollection
          .aggregate([
             { $match: { year: { $exists: true, $gte: startYear, $lte: endYear } } },
@@ -180,7 +178,6 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
       const minYear = yearAggregation.length ? yearAggregation[0].minYear : startYear;
       const maxYear = yearAggregation.length ? yearAggregation[0].maxYear : endYear;
 
-      // Apply filtering for runtime aggregation
       const runtimeAggregation = await moviesCollection
          .aggregate([
             { $match: { year: { $gte: startYear, $lte: endYear }, runtime: { $gt: 0 } } },
@@ -191,7 +188,6 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
          ? runtimeAggregation[0].avgRuntime.toFixed(2)
          : '0';
 
-      // Apply filtering for average rating
       const ratingAggregation = await moviesCollection
          .aggregate([
             {
@@ -205,7 +201,6 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
          .toArray();
       const avgRating = ratingAggregation.length ? ratingAggregation[0].avgRating.toFixed(2) : '0';
 
-      // Apply filtering for runtime over years
       const runtimeOverYears = await moviesCollection
          .aggregate([
             { $match: { year: { $gte: startYear, $lte: endYear }, runtime: { $gt: 0 } } },
@@ -216,26 +211,24 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
 
       console.log('Runtime data fetched:', runtimeOverYears.length, 'entries');
 
-      // Top 10 Highest Rated Movies
       const topRatedMovies = await moviesCollection
          .find({
             year: { $gte: startYear, $lte: endYear },
             'tomatoes.viewer.meter': { $exists: true }
          })
-         .sort({ 'tomatoes.viewer.meter': -1 }) // Sort by highest rating
+         .sort({ 'tomatoes.viewer.meter': -1 })
          .limit(10)
          .project({ title: 1, year: 1, 'tomatoes.viewer.meter': 1 })
          .toArray();
 
-      // Top 10 Most Frequent Genres
       const topGenres = await moviesCollection
          .aggregate([
             { $match: { year: { $gte: startYear, $lte: endYear } } },
-            { $unwind: '$genres' }, // Expand multi-genre movies
+            { $unwind: '$genres' },
             {
                $group: {
                   _id: '$genres',
-                  count: { $sum: 1 } // Count movies per genre
+                  count: { $sum: 1 }
                }
             },
             { $sort: { count: -1 } },
@@ -243,15 +236,13 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
          ])
          .toArray();
 
-      // Top 10 Longest Movies
       const longestMovies = await moviesCollection
          .find({ year: { $gte: startYear, $lte: endYear }, runtime: { $gt: 0 } })
-         .sort({ runtime: -1 }) // Sort by longest runtime
+         .sort({ runtime: -1 })
          .limit(10)
          .project({ title: 1, year: 1, runtime: 1 })
          .toArray();
 
-      // Apply filtering for genre averages
       const genreAverages = await moviesCollection
          .aggregate([
             {
@@ -260,20 +251,20 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
                   'tomatoes.viewer.meter': { $exists: true }
                }
             },
-            { $unwind: '$genres' }, // Separate multi-genre movies into multiple docs
+            { $unwind: '$genres' },
             {
                $group: {
                   _id: '$genres',
                   avgRating: { $avg: '$tomatoes.viewer.meter' }
                }
             },
-            { $sort: { avgRating: -1 } } // Sort highest to lowest rating
+            { $sort: { avgRating: -1 } }
          ])
          .toArray();
 
       const formattedGenreAverages = genreAverages.map((g) => ({
          genre: g._id,
-         avgRating: Math.round(g.avgRating * 10) / 10 // Round to 1 decimal
+         avgRating: Math.round(g.avgRating * 10) / 10
       }));
 
       console.log(
@@ -294,7 +285,7 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
          topRatedMovies,
          topGenres,
          longestMovies,
-         genreAverages: formattedGenreAverages // ✅ Filtered by selected year range
+         genreAverages: formattedGenreAverages
       });
    } catch (err) {
       console.error('❌ Error fetching movie stats:', err.message);
@@ -302,7 +293,6 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
    }
 });
 
-// Get Unique Actors (Cast)
 app.get('/api/actors', authenticateToken, async (req, res) => {
    try {
       const moviesCollection = db.collection('movies');
@@ -340,7 +330,6 @@ app.get('/api/actors', authenticateToken, async (req, res) => {
    }
 });
 
-// Get Unique Directors
 app.get('/api/directors', authenticateToken, async (req, res) => {
    try {
       const moviesCollection = db.collection('movies');
@@ -378,7 +367,6 @@ app.get('/api/directors', authenticateToken, async (req, res) => {
    }
 });
 
-// Get Unique Genres
 app.get('/api/genres', authenticateToken, async (req, res) => {
    try {
       const moviesCollection = db.collection('movies');
@@ -415,7 +403,6 @@ app.get('/api/genres', authenticateToken, async (req, res) => {
    }
 });
 
-// ✅ Middleware for Authentication
 function authenticateToken(req, res, next) {
    const token = req.header('Authorization')?.split(' ')[1];
    if (!token) return res.status(401).json({ error: 'Unauthorized' });

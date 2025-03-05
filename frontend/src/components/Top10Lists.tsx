@@ -3,7 +3,7 @@ interface Movie {
    year: number;
    rating?: number;
    runtime?: number;
-   tomatoes?: { viewer?: { meter?: number } }; // Add tomatoes structure to fix rating
+   tomatoes?: { viewer?: { meter?: number } };
 }
 
 interface Genre {
@@ -20,8 +20,7 @@ interface Top10ListsProps {
 const Top10Lists: React.FC<Top10ListsProps> = ({ topRatedMovies, topGenres, longestMovies }) => {
    return (
       <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-         {/* ⭐ Highest Rated Movies */}
-         <div className='bg-gray-800 p-6 rounded-lg shadow-md max-h-[50%] overflow-y-auto scrollbar-hide'>
+         <div className='bg-gray-800 p-6 rounded-lg shadow-md max-h-[55%] overflow-y-auto scrollbar-hide'>
             <h3 className='text-xl font-bold mb-4 text-purple-400'>🏆 Highest Rated Movies</h3>
             <ul className='space-y-2'>
                {topRatedMovies.map((movie, index) => (
@@ -48,8 +47,7 @@ const Top10Lists: React.FC<Top10ListsProps> = ({ topRatedMovies, topGenres, long
             </ul>
          </div>
 
-         {/* 🎭 Most Popular Genres */}
-         <div className='bg-gray-800 p-6 rounded-lg shadow-md max-h-[50%] overflow-y-auto scrollbar-hide'>
+         <div className='bg-gray-800 p-6 rounded-lg shadow-md max-h-[55%] overflow-y-auto scrollbar-hide'>
             <h3 className='text-xl font-bold mb-4 text-blue-400'>🎭 Most Popular Genres</h3>
             <ul className='space-y-2'>
                {topGenres.map((genre, index) => (
@@ -69,8 +67,7 @@ const Top10Lists: React.FC<Top10ListsProps> = ({ topRatedMovies, topGenres, long
             </ul>
          </div>
 
-         {/* ⏳ Longest Movies */}
-         <div className='bg-gray-800 p-6 rounded-lg shadow-md max-h-[50%] overflow-y-auto scrollbar-hide'>
+         <div className='bg-gray-800 p-6 rounded-lg shadow-md max-h-[55%] overflow-y-auto scrollbar-hide'>
             <h3 className='text-xl font-bold mb-4 text-green-400'>⏳ Longest Movies</h3>
             <ul className='space-y-2'>
                {longestMovies.map((movie, index) => (

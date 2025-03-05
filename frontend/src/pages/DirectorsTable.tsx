@@ -31,7 +31,7 @@ export default function DirectorsTable() {
    }, []);
 
    return (
-      <div className='flex h-screen bg-gray-900 text-white'>
+      <div className='flex max-h-screen overflow-scroll w-screen bg-gray-900 text-white'>
          <Sidebar />
          <div className='flex flex-col flex-1 p-6'>
             <DataTable data={directors} title='Top Directors in Movies' />

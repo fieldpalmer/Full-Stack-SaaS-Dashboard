@@ -54,7 +54,7 @@ export default function MoviesTable() {
    }, [movies]);
 
    return (
-      <div className='flex h-screen bg-gray-900 text-white'>
+      <div className='flex h-screen w-screen bg-gray-900 text-white'>
          <Sidebar />
 
          <div className='flex flex-col flex-1 p-6'>

@@ -13,7 +13,7 @@ export default function DataTable({ data, title }: DataTableProps) {
    return (
       <div className='bg-gray-800 p-6 rounded-lg shadow-md mt-6'>
          <h3 className='text-lg text-gray-400 mb-4'>{title}</h3>
-         <table className='w-full text-left border-collapse'>
+         <table className='w-full text-left border-collapse table-auto'>
             <thead>
                <tr className='border-b border-gray-700'>
                   <th className='py-2 px-4'>Name</th>

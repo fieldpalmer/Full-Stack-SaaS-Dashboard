@@ -107,7 +107,7 @@ export default function Dashboard() {
    }, [yearRange]);
 
    return (
-      <div className='flex h-screen w-screen bg-gray-900 text-white'>
+      <div className='flex max-h-screen overflow-hidden w-screen bg-gray-900 text-white'>
          <Sidebar />
          <div className='flex flex-col flex-1'>
             <header className='bg-gray-800 p-4 flex justify-between items-center shadow-md'>
@@ -117,16 +117,14 @@ export default function Dashboard() {
                </button>
             </header>
 
-            <div className='m-6 bg-gray-800 px-4 rounded-lg flex flex-col md:flex-row items-center gap-6'>
-               {/* 📊 Stats Widgets (Fixed width for consistency) */}
-               <div className='flex gap-3'>
+            <div className='m-6 px-4 py-4 rounded-lg flex flex-col md:flex-row items-center gap-8'>
+               <div className='flex gap-6'>
                   <StatsWidget title='Movies' value={stats.totalMovies.toString()} />
                   <StatsWidget title='Avg Runtime (mins)' value={stats.avgRuntime} />
                   <StatsWidget title='Avg Rating' value={stats.avgRating} />
                </div>
-
                <div className='flex-1'>
-                  <div className='flex justify-between text-sm text-gray-400 mb-2'>
+                  <div className='flex justify-between text-gray-400 mb-2'>
                      <span>{yearRange[0]}</span>
                      <span>{yearRange[1]}</span>
                   </div>
@@ -136,10 +134,23 @@ export default function Dashboard() {
                      max={stats.maxYear}
                      value={yearRange}
                      onChange={(value) => setYearRange(value as [number, number])}
-                     trackStyle={[{ backgroundColor: '#4f46e5' }]}
+                     trackStyle={[{ backgroundColor: '#4f46e5', height: 13 }]}
+                     railStyle={{ height: 13 }}
                      handleStyle={[
-                        { borderColor: '#4f46e5', backgroundColor: '#4f46e5' },
-                        { borderColor: '#4f46e5', backgroundColor: '#4f46e5' }
+                        {
+                           borderColor: '#4f46e5',
+                           backgroundColor: '#4f46e5',
+                           height: 24,
+                           width: 24,
+                           opacity: 100
+                        },
+                        {
+                           borderColor: '#4f46e5',
+                           backgroundColor: '#4f46e5',
+                           height: 24,
+                           width: 24,
+                           opacity: 100
+                        }
                      ]}
                   />
                </div>
@@ -148,8 +159,6 @@ export default function Dashboard() {
             <div className='px-6 pb-6'>
                <MovieRuntimeChart data={runtimeData} />
             </div>
-
-            {/* <GenreRatingChart data={stats.genreAverages} /> */}
 
             <div className='px-6'>
                <Top10Lists

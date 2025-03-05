@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
-   const location = useLocation(); // ✅ Get the current route
+   const location = useLocation();
 
    const links = [
       { name: 'Overview', path: '/dashboard' },
@@ -16,7 +16,7 @@ const Sidebar = () => {
          <h2 className='text-2xl font-bold mb-6'>Movies</h2>
          <nav className='flex flex-col space-y-2'>
             {links.map((link) => {
-               const isActive = location.pathname === link.path; // ✅ Check if link is active
+               const isActive = location.pathname === link.path;
                return (
                   <NavLink
                      key={link.path}

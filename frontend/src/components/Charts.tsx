@@ -26,7 +26,7 @@ interface StatsWidgetProps {
 
 export const StatsWidget: React.FC<StatsWidgetProps> = ({ title, value }) => {
    return (
-      <div className='bg-gray-800 p-3 rounded-lg shadow-md text-center'>
+      <div className='bg-gray-800 p-6 rounded-lg shadow-md text-center'>
          <h3 className='text-lg text-gray-400'>{title}</h3>
          <p className='text-2xl font-bold text-blue-400'>{value}</p>
       </div>
@@ -67,8 +67,8 @@ export const GenreRatingChart: React.FC<GenreRatingChartProps> = ({ data }) => {
 
 export const MovieRuntimeChart: React.FC<MovieRuntimeChartProps> = ({ data }) => {
    return (
-      <div className='bg-gray-800 p-3 rounded-lg shadow-md'>
-         <ResponsiveContainer width='100%' height={200}>
+      <div className='bg-gray-800 p-6 rounded-lg shadow-md'>
+         <ResponsiveContainer width='100%' height={250}>
             <LineChart data={data}>
                {' '}
                {/* Increased bottom margin */}
