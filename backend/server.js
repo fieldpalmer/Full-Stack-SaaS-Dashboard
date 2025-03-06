@@ -103,44 +103,73 @@ app.get('/api/movies', authenticateToken, async (req, res) => {
    try {
       const moviesCollection = db.collection('movies');
 
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
-      const skip = (page - 1) * limit;
-
       const sortField = req.query.sortField || 'year';
       const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
       const genreFilter = req.query.genre ? { genres: req.query.genre } : {};
       const ratingFilter = req.query.rating ? { rated: req.query.rating } : {};
       const yearFilter = req.query.year ? { year: parseInt(req.query.year) } : {};
 
-      const filterQuery = { ...genreFilter, ...ratingFilter, ...yearFilter };
+      // ✅ Exclude documents where any required field is missing
+      const requiredFieldsFilter = {
+         title: { $exists: true, $ne: null },
+         year: { $exists: true, $ne: null },
+         runtime: { $exists: true, $ne: null },
+         genres: { $exists: true, $ne: null, $not: { $size: 0 } }, // Ensure genres array is not empty
+         directors: { $exists: true, $ne: null, $not: { $size: 0 } }, // Ensure directors array is not empty
+         rated: { $exists: true, $ne: null },
+         'tomatoes.viewer.meter': { $exists: true, $ne: null },
+         plot: { $exists: true, $ne: null },
+         cast: { $exists: true, $ne: null, $not: { $size: 0 } }, // Ensure cast array is not empty
+         poster: { $exists: true, $ne: null },
+         languages: { $exists: true, $ne: null, $not: { $size: 0 } }, // Ensure languages array is not empty
+         countries: { $exists: true, $ne: null, $not: { $size: 0 } } // Ensure countries array is not empty
+      };
+
+      // ✅ Merge filters
+      const filterQuery = {
+         ...genreFilter,
+         ...ratingFilter,
+         ...yearFilter,
+         ...requiredFieldsFilter
+      };
 
       const movies = await moviesCollection
          .find(filterQuery, {
             projection: {
+               _id: 1,
                title: 1,
                year: 1,
                runtime: 1,
                genres: 1,
                directors: 1,
                rated: 1,
-               'tomatoes.viewer.meter': 1
+               'tomatoes.viewer.meter': 1,
+               plot: 1,
+               cast: 1,
+               poster: 1,
+               languages: 1,
+               countries: 1
             }
          })
          .sort({ [sortField]: sortOrder })
-         .skip(skip)
-         .limit(limit)
          .toArray();
-
-      const totalMovies = await moviesCollection.countDocuments(filterQuery);
 
       res.json({
          movies: movies.map((movie) => ({
-            ...movie,
-            viewerTomatoesRating: movie.tomatoes?.viewer?.meter || 'N/A' // ✅ Ensure safe access
-         })),
-         totalPages: Math.ceil(totalMovies / limit),
-         currentPage: page
+            _id: movie._id,
+            title: movie.title,
+            year: movie.year,
+            runtime: movie.runtime,
+            genres: movie.genres,
+            directors: movie.directors,
+            rated: movie.rated,
+            viewerTomatoesRating: movie.tomatoes?.viewer?.meter || 'N/A',
+            plot: movie.plot,
+            cast: movie.cast,
+            poster: movie.poster,
+            languages: movie.languages,
+            countries: movie.countries
+         }))
       });
    } catch (err) {
       console.error('❌ Error fetching movies:', err.message);

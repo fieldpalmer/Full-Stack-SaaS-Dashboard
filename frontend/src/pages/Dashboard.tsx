@@ -107,7 +107,7 @@ export default function Dashboard() {
    }, [yearRange]);
 
    return (
-      <div className='flex max-h-screen overflow-hidden w-screen bg-gray-900 text-white'>
+      <div className='flex max-h-screen overflow-scroll w-screen bg-gray-900 text-white'>
          <Sidebar />
          <div className='flex flex-col flex-1'>
             <header className='bg-gray-800 p-4 flex justify-between items-center shadow-md'>
