@@ -103,7 +103,7 @@ app.get('/api/movies', authenticateToken, async (req, res) => {
    try {
       const moviesCollection = db.collection('movies');
       // const page = parseInt(req.query.page) || 1;
-      // const limit = parseInt(req.query.limit) || 100;
+      const limit = parseInt(req.query.limit) || 10;
       // const skip = (page - 1) * limit;
       const sortField = req.query.sortField || 'year';
       const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
@@ -155,7 +155,7 @@ app.get('/api/movies', authenticateToken, async (req, res) => {
          })
          .sort({ [sortField]: sortOrder })
          // .skip(skip)
-         // .limit(limit)
+         .limit(limit)
          .toArray();
 
       // const totalMovies = await moviesCollection.countDocuments(filterQuery);

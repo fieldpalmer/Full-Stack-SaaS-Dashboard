@@ -181,122 +181,18 @@ export default function MoviesTable() {
       <div className='flex max-h-screen overflow-auto w-screen bg-gray-900 text-white'>
          <Sidebar />
 
-         <div className='flex flex-col flex-1 p-6'>
-            <h2 className='text-2xl font-bold mb-4'>All Movies</h2>
-            <div className='flex gap-6'>
-               <StatsWidget title='Movies' value={stats.totalMovies.toString()} />
-               <StatsWidget title='Avg Runtime (mins)' value={stats.avgRuntime} />
-               <StatsWidget title='Avg Rating' value={stats.avgRating} />
-            </div>
-            <div className='flex gap-4 mb-4 bg-gray-800 p-4 rounded-lg'>
-               <select
-                  value={selectedGenre}
-                  onChange={(e) => setSelectedGenre(e.target.value)}
-                  className='bg-gray-700 p-2 rounded'
-               >
-                  <option value=''>All Genres</option>
-                  {availableGenres.map((genre, index) => (
-                     <option key={index} value={genre}>
-                        {genre}
-                     </option>
-                  ))}
-               </select>
-
-               <select
-                  value={selectedDirector}
-                  onChange={(e) => setSelectedDirector(e.target.value)}
-                  className='bg-gray-700 p-2 rounded'
-               >
-                  <option value=''>All Directors</option>
-                  {availableDirectors.map((director, index) => (
-                     <option key={index} value={director}>
-                        {director}
-                     </option>
-                  ))}
-               </select>
-
-               <select
-                  value={selectedRating}
-                  onChange={(e) => setSelectedRating(e.target.value)}
-                  className='bg-gray-700 p-2 rounded'
-               >
-                  <option value=''>All Ratings</option>
-                  {availableRatings.map((rating, index) => (
-                     <option key={index} value={rating}>
-                        {rating}
-                     </option>
-                  ))}
-               </select>
-
-               <select value={selectedCast} onChange={(e) => setSelectedCast(e.target.value)} className='bg-gray-700 p-2 rounded'>
-                  <option value=''>All Actors</option>
-                  {availableCasts.map((castMember, index) => (
-                     <option key={index} value={castMember}>
-                        {castMember}
-                     </option>
-                  ))}
-               </select>
-
-               <select
-                  value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
-                  className='bg-gray-700 p-2 rounded'
-               >
-                  <option value=''>All Languages</option>
-                  {availableLanguages.map((language, index) => (
-                     <option key={index} value={language}>
-                        {language}
-                     </option>
-                  ))}
-               </select>
-
-               <select
-                  value={selectedCountry}
-                  onChange={(e) => setSelectedCountry(e.target.value)}
-                  className='bg-gray-700 p-2 rounded'
-               >
-                  <option value=''>All Countries</option>
-                  {availableCountries.map((country, index) => (
-                     <option key={index} value={country}>
-                        {country}
-                     </option>
-                  ))}
-               </select>
-            </div>
-
-            <div className='flex flex-wrap md:flex-nowrap gap-6 mb-2'>
-               <div className='w-full md:w-1/2 bg-gray-800 p-4 pb-6 rounded-lg'>
-                  <div className='flex justify-between text-gray-400 mb-2'>
-                     <span>{meterRange[0]}</span>
-                     <span className='text-center flex-1'>Tomatoes Rating (Viewer)</span>
-                     <span>{meterRange[1]}</span>
-                  </div>
-                  <Slider
-                     range
-                     min={minMeter}
-                     max={maxMeter}
-                     value={meterRange}
-                     onChange={(value) => setMeterRange(value as [number, number])}
-                     trackStyle={[{ backgroundColor: '#4f46e5', height: 10 }]}
-                     railStyle={{ height: 10 }}
-                     handleStyle={[
-                        {
-                           borderColor: '#4f46e5',
-                           backgroundColor: '#4f46e5',
-                           height: 20,
-                           width: 20
-                        },
-                        {
-                           borderColor: '#4f46e5',
-                           backgroundColor: '#4f46e5',
-                           height: 20,
-                           width: 20
-                        }
-                     ]}
-                  />
+         <div className='flex flex-col p-6'>
+            {/* Stats & Slider 1 */}
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-6 m-6 rounded-lg'>
+               {/* Stats Widgets */}
+               <div className='flex gap-6 col-span-1'>
+                  <StatsWidget title='Movies' value={stats.totalMovies.toString()} />
+                  <StatsWidget title='Avg Runtime (mins)' value={String(stats.avgRuntime)} />
+                  <StatsWidget title='Avg Rating' value={String(stats.avgRating)} />
                </div>
 
-               <div className='w-full md:w-1/2 bg-gray-800 p-4 pb-6 rounded-lg'>
+               {/* Year Range Slider */}
+               <div className='col-span-2'>
                   <div className='flex justify-between text-gray-400 mb-2'>
                      <span>{yearRange[0]}</span>
                      <span className='text-center flex-1'>Release Date</span>
@@ -308,25 +204,92 @@ export default function MoviesTable() {
                      max={maxYear}
                      value={yearRange}
                      onChange={(value) => setYearRange(value as [number, number])}
-                     trackStyle={[{ backgroundColor: '#4f46e5', height: 10 }]}
-                     railStyle={{ height: 10 }}
+                     trackStyle={[{ backgroundColor: '#4f46e5', height: 13 }]}
+                     railStyle={{ height: 13 }}
                      handleStyle={[
                         {
                            borderColor: '#4f46e5',
                            backgroundColor: '#4f46e5',
-                           height: 20,
-                           width: 20
+                           height: 24,
+                           width: 24,
+                           opacity: 100
                         },
                         {
                            borderColor: '#4f46e5',
                            backgroundColor: '#4f46e5',
-                           height: 20,
-                           width: 20
+                           height: 24,
+                           width: 24,
+                           opacity: 100
                         }
                      ]}
                   />
                </div>
             </div>
+
+            {/* Filters & Slider 2 */}
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-6 m-6 rounded-lg'>
+               {/* Tomatoes Rating Slider */}
+               <div className='px-6 col-span-1'>
+                  <div className='flex justify-between text-gray-400 mb-2'>
+                     <span>{meterRange[0]}</span>
+                     <span className='text-center flex-1'>Tomatoes Rating (Viewer)</span>
+                     <span>{meterRange[1]}</span>
+                  </div>
+                  <Slider
+                     range
+                     min={minMeter}
+                     max={maxMeter}
+                     value={meterRange}
+                     onChange={(value) => setMeterRange(value as [number, number])}
+                     trackStyle={[{ backgroundColor: '#4f46e5', height: 13 }]}
+                     railStyle={{ height: 13 }}
+                     handleStyle={[
+                        {
+                           borderColor: '#4f46e5',
+                           backgroundColor: '#4f46e5',
+                           height: 24,
+                           width: 24,
+                           opacity: 100
+                        },
+                        {
+                           borderColor: '#4f46e5',
+                           backgroundColor: '#4f46e5',
+                           height: 24,
+                           width: 24,
+                           opacity: 100
+                        }
+                     ]}
+                  />
+               </div>
+
+               {/* Filters */}
+               <div className='col-span-2'>
+                  {[
+                     { value: selectedGenre, onChange: setSelectedGenre, options: availableGenres, label: 'Genres' },
+                     { value: selectedDirector, onChange: setSelectedDirector, options: availableDirectors, label: 'Directors' },
+                     { value: selectedRating, onChange: setSelectedRating, options: availableRatings, label: 'Ratings' },
+                     { value: selectedCast, onChange: setSelectedCast, options: availableCasts, label: 'Actors' },
+                     { value: selectedLanguage, onChange: setSelectedLanguage, options: availableLanguages, label: 'Languages' },
+                     { value: selectedCountry, onChange: setSelectedCountry, options: availableCountries, label: 'Countries' }
+                  ].map(({ value, onChange, options, label }, index) => (
+                     <select
+                        key={index}
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        className='bg-gray-700  m-1 p-3 rounded'
+                     >
+                        <option value=''>{`All ${label}`}</option>
+                        {options.map((option, idx) => (
+                           <option key={idx} value={option}>
+                              {option}
+                           </option>
+                        ))}
+                     </select>
+                  ))}
+               </div>
+            </div>
+
+            <hr className='my-10' />
 
             {loading ? (
                <div className='flex justify-center items-center h-40'>
