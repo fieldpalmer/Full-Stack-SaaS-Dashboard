@@ -8,7 +8,8 @@ const Sidebar = () => {
       { name: 'Movies', path: '/dashboard/movies-table' },
       { name: 'Actors', path: '/dashboard/actors' },
       { name: 'Directors', path: '/dashboard/directors' },
-      { name: 'Genres', path: '/dashboard/genres' }
+      { name: 'Genres', path: '/dashboard/genres' },
+      { name: 'My Movies', path: '/dashboard/my-movies' }
    ];
 
    return (

@@ -54,6 +54,17 @@ export default function App() {
                </ProtectedRoute>
             }
          />
+         <Route
+            path='/dashboard/my-movies'
+            element={
+               <ProtectedRoute>
+                  {/* replace with personal dashboard of movies */}
+                  {/* include option to go through list and save records to user */}
+                  {/* offer at registration too */}
+                  <MoviesTable />
+               </ProtectedRoute>
+            }
+         />
       </Routes>
    );
 }
