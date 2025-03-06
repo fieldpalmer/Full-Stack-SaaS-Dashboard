@@ -102,7 +102,9 @@ app.get('/api/users', authenticateToken, async (req, res) => {
 app.get('/api/movies', authenticateToken, async (req, res) => {
    try {
       const moviesCollection = db.collection('movies');
-
+      // const page = parseInt(req.query.page) || 1;
+      // const limit = parseInt(req.query.limit) || 100;
+      // const skip = (page - 1) * limit;
       const sortField = req.query.sortField || 'year';
       const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
       const genreFilter = req.query.genre ? { genres: req.query.genre } : {};
@@ -152,7 +154,11 @@ app.get('/api/movies', authenticateToken, async (req, res) => {
             }
          })
          .sort({ [sortField]: sortOrder })
+         // .skip(skip)
+         // .limit(limit)
          .toArray();
+
+      // const totalMovies = await moviesCollection.countDocuments(filterQuery);
 
       res.json({
          movies: movies.map((movie) => ({
@@ -170,6 +176,8 @@ app.get('/api/movies', authenticateToken, async (req, res) => {
             languages: movie.languages,
             countries: movie.countries
          }))
+         // totalPages: Math.ceil(totalMovies / limit),
+         // currentPage: page
       });
    } catch (err) {
       console.error('❌ Error fetching movies:', err.message);
@@ -213,9 +221,7 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
             { $group: { _id: null, avgRuntime: { $avg: '$runtime' } } }
          ])
          .toArray();
-      const avgRuntime = runtimeAggregation.length
-         ? runtimeAggregation[0].avgRuntime.toFixed(2)
-         : '0';
+      const avgRuntime = runtimeAggregation.length ? runtimeAggregation[0].avgRuntime.toFixed(2) : '0';
 
       const ratingAggregation = await moviesCollection
          .aggregate([
@@ -296,11 +302,7 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
          avgRating: Math.round(g.avgRating * 10) / 10
       }));
 
-      console.log(
-         `Filtered Genre Averages (${startYear}-${endYear}):`,
-         formattedGenreAverages.length,
-         'genres'
-      );
+      console.log(`Filtered Genre Averages (${startYear}-${endYear}):`, formattedGenreAverages.length, 'genres');
 
       res.json({
          totalMovies: await moviesCollection.countDocuments({
@@ -346,9 +348,7 @@ app.get('/api/actors', authenticateToken, async (req, res) => {
       // Calculate median year
       actorsAggregation.forEach((actor) => {
          const sortedYears = actor.years.filter((y) => y).sort((a, b) => a - b);
-         actor.medianYear = sortedYears.length
-            ? sortedYears[Math.floor(sortedYears.length / 2)]
-            : 'N/A';
+         actor.medianYear = sortedYears.length ? sortedYears[Math.floor(sortedYears.length / 2)] : 'N/A';
          delete actor.years;
       });
 
@@ -383,9 +383,7 @@ app.get('/api/directors', authenticateToken, async (req, res) => {
       // Calculate median year
       directorsAggregation.forEach((director) => {
          const sortedYears = director.years.filter((y) => y).sort((a, b) => a - b);
-         director.medianYear = sortedYears.length
-            ? sortedYears[Math.floor(sortedYears.length / 2)]
-            : 'N/A';
+         director.medianYear = sortedYears.length ? sortedYears[Math.floor(sortedYears.length / 2)] : 'N/A';
          delete director.years;
       });
 
@@ -419,9 +417,7 @@ app.get('/api/genres', authenticateToken, async (req, res) => {
       // Calculate median year
       genresAggregation.forEach((genre) => {
          const sortedYears = genre.years.filter((y) => y).sort((a, b) => a - b);
-         genre.medianYear = sortedYears.length
-            ? sortedYears[Math.floor(sortedYears.length / 2)]
-            : 'N/A';
+         genre.medianYear = sortedYears.length ? sortedYears[Math.floor(sortedYears.length / 2)] : 'N/A';
          delete genre.years;
       });
 
