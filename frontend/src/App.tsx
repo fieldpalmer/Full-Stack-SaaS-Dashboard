@@ -7,10 +7,12 @@ import MoviesTable from './pages/MoviesTables';
 import ActorsTable from './pages/ActorsTable';
 import DirectorsTable from './pages/DirectorsTable';
 import GenresTable from './pages/GenresTable';
+import LandingPage from './pages/LandingPage';
 
 export default function App() {
    return (
       <Routes>
+         <Route path='/' element={<LandingPage />} />
          <Route path='/login' element={<Login />} />
          <Route path='/register' element={<Register />} />
          <Route

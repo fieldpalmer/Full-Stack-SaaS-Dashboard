@@ -104,7 +104,7 @@ export default function Dashboard() {
       if (yearRange[0] !== stats.minYear || yearRange[1] !== stats.maxYear) {
          fetchFilteredMovies();
       }
-   }, [yearRange]);
+   }, [yearRange, stats.maxYear, stats.minYear]);
 
    return (
       <div className='flex max-h-screen overflow-scroll w-screen bg-gray-900 text-white'>
@@ -161,11 +161,7 @@ export default function Dashboard() {
             </div>
 
             <div className='px-6'>
-               <Top10Lists
-                  topRatedMovies={stats.topRatedMovies}
-                  topGenres={stats.topGenres}
-                  longestMovies={stats.longestMovies}
-               />
+               <Top10Lists topRatedMovies={stats.topRatedMovies} topGenres={stats.topGenres} longestMovies={stats.longestMovies} />
             </div>
          </div>
       </div>

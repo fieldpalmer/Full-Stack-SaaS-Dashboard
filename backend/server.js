@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 const app = express();
@@ -28,6 +29,38 @@ connectDB();
 
 const usersCollection = () => db.collection('users');
 const moviesCollection = () => db.collection('movies');
+
+app.post('/api/send-email', async (req, res) => {
+   const { email } = req.body;
+
+   if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+   }
+
+   try {
+      const transporter = nodemailer.createTransport({
+         service: 'gmail',
+         auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+         }
+      });
+
+      const mailOptions = {
+         from: process.env.EMAIL_USER,
+         to: 'gfieldpalmer@gmail.com',
+         subject: 'New Data Automations Demo Request',
+         text: `A user signed up with this email: ${email}`
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      res.status(200).json({ message: 'Email sent successfully!' });
+   } catch (error) {
+      console.error('Error sending email:', error);
+      res.status(500).json({ error: 'Failed to send email' });
+   }
+});
 
 app.post('/register', async (req, res) => {
    const { name, email, password } = req.body;
