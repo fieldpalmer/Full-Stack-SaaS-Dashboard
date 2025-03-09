@@ -1,28 +1,12 @@
 import React, { useState } from 'react';
 import styles, { layout } from '../style';
 import { robot, close, logo, menu, bill, card } from '../assets';
-import {
-   features,
-   navLinks,
-   stats,
-   socialMedia,
-   // clients,
-   // feedback,
-   footerLinks
-} from '../constants';
+import { features, navLinks, stats, socialMedia, footerLinks } from '../constants';
 
 import Signup from '../components/Signup';
 import Button from '../components/Button';
 import { IconType } from 'react-icons';
-// import FeedbackCard from '../components/FeedbackCard';
-
-type FeatureCardProps = {
-   icon: string;
-   title: string;
-   subtitle: string;
-   content: string;
-   index: number;
-};
+import FeatureCard from '../components/FeatureCard';
 
 type Feature = {
    id: string;
@@ -37,25 +21,6 @@ type SocialMediaItem = {
    link: string;
 };
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, subtitle, content, index }) => (
-   <div
-      className={`flex flex-row p-2 rounded-[20px] ${
-         index !== features.length - 1 ? 'mb-6' : 'mb-0'
-      } feature-card`}
-   >
-      <div className={`w-[64px] h-[64px] rounded-full ${styles.flexCenter} bg-dimBlue`}>
-         <img src={icon} alt='star' className='w-[50%] h-[50%] object-contain' />
-      </div>
-      <div className='flex-1 flex flex-col ml-3'>
-         <h4 className='font-poppins font-semibold text-white text-[18px] leading-[23.4px] mb-1'>
-            <strong>{title}</strong> - {subtitle}
-         </h4>
-         <p className='font-poppins font-normal text-dimWhite text-[16px] leading-[24px]'>
-            {content}
-         </p>
-      </div>
-   </div>
-);
 const LandingPage: React.FC = () => {
    const [active, setActive] = useState<string>('Home');
    const [toggle, setToggle] = useState<boolean>(false);

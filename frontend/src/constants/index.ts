@@ -1,6 +1,5 @@
 import { IconType } from 'react-icons';
-import { avatar, airbnb, binance, coinbase, dropbox, send, shield, star } from '../assets';
-
+import { avatar, send, shield, star } from '../assets';
 import { FaYoutube, FaSpotify, FaImdb } from 'react-icons/fa';
 import { SiDiscogs } from 'react-icons/si';
 
@@ -45,11 +44,6 @@ interface SocialMedia {
    id: string;
    icon: IconType;
    link: string;
-}
-
-interface Client {
-   id: string;
-   logo: string;
 }
 
 export const navLinks: NavLink[] = [
@@ -155,11 +149,4 @@ export const socialMedia: SocialMedia[] = [
    { id: 'social-media-2', icon: FaSpotify, link: 'https://www.spotify.com/' },
    { id: 'social-media-3', icon: FaImdb, link: 'https://www.imdb.com/' },
    { id: 'social-media-4', icon: SiDiscogs, link: 'https://www.discogs.com/' }
-];
-
-export const clients: Client[] = [
-   { id: 'client-1', logo: airbnb },
-   { id: 'client-2', logo: binance },
-   { id: 'client-3', logo: coinbase },
-   { id: 'client-4', logo: dropbox }
 ];
