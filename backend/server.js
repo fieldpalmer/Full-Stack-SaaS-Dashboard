@@ -102,7 +102,7 @@ app.post('/login', async (req, res) => {
          user: { id: user._id, name: user.name, email: user.email, role: user.role }
       });
    } catch (err) {
-      alert('login failed');
+      // res.status(401).json({ message: 'Login failed' });
       res.status(500).json({ error: err.message });
    }
 });

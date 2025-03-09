@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import styles, { layout } from '../style';
 import { robot, close, logo, menu, bill, card } from '../assets';
-import { features, navLinks, stats, socialMedia, clients, feedback, footerLinks } from '../constants';
+import {
+   features,
+   navLinks,
+   stats,
+   socialMedia,
+   clients,
+   feedback,
+   footerLinks
+} from '../constants';
 
 import Signup from '../components/Signup';
 import Button from '../components/Button';
@@ -28,13 +36,21 @@ type SocialMediaItem = {
 };
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, content, index }) => (
-   <div className={`flex flex-row p-6 rounded-[20px] ${index !== features.length - 1 ? 'mb-6' : 'mb-0'} feature-card`}>
+   <div
+      className={`flex flex-row p-6 rounded-[20px] ${
+         index !== features.length - 1 ? 'mb-6' : 'mb-0'
+      } feature-card`}
+   >
       <div className={`w-[64px] h-[64px] rounded-full ${styles.flexCenter} bg-dimBlue`}>
          <img src={icon} alt='star' className='w-[50%] h-[50%] object-contain' />
       </div>
       <div className='flex-1 flex flex-col ml-3'>
-         <h4 className='font-poppins font-semibold text-white text-[18px] leading-[23.4px] mb-1'>{title}</h4>
-         <p className='font-poppins font-normal text-dimWhite text-[16px] leading-[24px]'>{content}</p>
+         <h4 className='font-poppins font-semibold text-white text-[18px] leading-[23.4px] mb-1'>
+            {title}
+         </h4>
+         <p className='font-poppins font-normal text-dimWhite text-[16px] leading-[24px]'>
+            {content}
+         </p>
       </div>
    </div>
 );
@@ -44,7 +60,7 @@ const LandingPage: React.FC = () => {
 
    return (
       <>
-         <div className='bg-primary w-screen overflow-hidden'>
+         <div className='w-screen bg-gradient-to-br from-blue-950 to-green-950 overflow-hidden'>
             <div className={`${styles.paddingX} ${styles.flexCenter}`}>
                <div className={`${styles.boxWidth}`}>
                   {/* <Navbar /> */}
@@ -108,13 +124,18 @@ const LandingPage: React.FC = () => {
                            </h1>
                         </div>
                         <p className={`${styles.paragraph} max-w-[470px] mt-5`}>
-                           A brief, informative value proposition to set us apart and draw people in while steering them towards
-                           our CTA, which is the email signup right below.
+                           A brief, informative value proposition to set us apart and draw people in
+                           while steering them towards our CTA, which is the email signup right
+                           below.
                         </p>
                         <Signup />
                      </div>
                      <div className={`flex-1 flex ${styles.flexCenter} md:my-0 my-10 relative`}>
-                        <img src={robot} alt='billing' className='w-[100%] h-[100%] relative z-[5]' />
+                        <img
+                           src={robot}
+                           alt='billing'
+                           className='w-[100%] h-[100%] relative z-[5]'
+                        />
                         <div className='absolute z-[0] w-[40%] h-[35%] top-0 pink__gradient' />
                         <div className='absolute z-[1] w-[80%] h-[80%] rounded-full white__gradient bottom-40' />
                         <div className='absolute z-[0] w-[50%] h-[50%] right-20 bottom-20 blue__gradient' />
@@ -128,7 +149,10 @@ const LandingPage: React.FC = () => {
                   {/* <Stats /> */}
                   <section className={`${styles.flexCenter} flex-row flex-wrap sm:mb-20 mb-6`}>
                      {stats.map((stat) => (
-                        <div key={stat.id} className={`flex-1 flex justify-start items-center flex-row m-3`}>
+                        <div
+                           key={stat.id}
+                           className={`flex-1 flex justify-start items-center flex-row m-3`}
+                        >
                            <h4 className='font-poppins font-semibold xs:text-[40.89px] text-[30.89px] xs:leading-[53.16px] leading-[43.16px] text-white'>
                               {stat.value}
                            </h4>
@@ -145,8 +169,9 @@ const LandingPage: React.FC = () => {
                            If you build it, <br className='sm:block hidden' /> they will come.
                         </h2>
                         <p className={`${styles.paragraph} max-w-[470px] mt-5`}>
-                           With a good product and effective promotion success is inevitable. The details of your initiative can
-                           fit here with ease, and the buttons and highlights keep directing to our CTA.
+                           With a good product and effective promotion success is inevitable. The
+                           details of your initiative can fit here with ease, and the buttons and
+                           highlights keep directing to our CTA.
                         </p>
 
                         <Button styles={`mt-10`} />
@@ -161,7 +186,11 @@ const LandingPage: React.FC = () => {
                   {/* <Billing /> */}
                   <section id='product' className={layout.sectionReverse}>
                      <div className={layout.sectionImgReverse}>
-                        <img src={bill} alt='billing' className='w-[100%] h-[100%] relative z-[5]' />
+                        <img
+                           src={bill}
+                           alt='billing'
+                           className='w-[100%] h-[100%] relative z-[5]'
+                        />
                         <div className='absolute z-[3] -left-1/2 top-0 w-[50%] h-[50%] rounded-full white__gradient' />
                         <div className='absolute z-[0] w-[50%] h-[50%] -left-1/2 bottom-0 rounded-full pink__gradient' />
                      </div>
@@ -172,8 +201,8 @@ const LandingPage: React.FC = () => {
                            at whatcha got.
                         </h2>
                         <p className={`${styles.paragraph} max-w-[470px] mt-5`}>
-                           Elit enim sed massa etiam. Mauris eu adipiscing ultrices ametodio aenean neque. Fusce ipsum orci rhoncus
-                           aliporttitor integer platea placerat.
+                           Elit enim sed massa etiam. Mauris eu adipiscing ultrices ametodio aenean
+                           neque. Fusce ipsum orci rhoncus aliporttitor integer platea placerat.
                         </p>
                         <div className='flex flex-row mt-10'>
                            {socialMedia.map((social: SocialMediaItem, index: number) => (
@@ -199,8 +228,8 @@ const LandingPage: React.FC = () => {
                            they should care.
                         </h2>
                         <p className={`${styles.paragraph} max-w-[470px] mt-5`}>
-                           Arcu tortor, purus in mattis at sed integer faucibus. Aliquet quis aliquet eget mauris tortor.ç Aliquet
-                           ultrices ac, ametau.
+                           Arcu tortor, purus in mattis at sed integer faucibus. Aliquet quis
+                           aliquet eget mauris tortor.ç Aliquet ultrices ac, ametau.
                         </p>
 
                         <Button styles={`mt-10`} />
@@ -214,14 +243,24 @@ const LandingPage: React.FC = () => {
                   <section className={`${styles.flexCenter} my-4`}>
                      <div className={`${styles.flexCenter} flex-wrap w-full`}>
                         {clients.map((client) => (
-                           <div key={client.id} className={`flex-1 ${styles.flexCenter} sm:min-w-[192px] min-w-[120px] m-5`}>
-                              <img src={client.logo} alt='client_logo' className='sm:w-[192px] w-[100px] object-contain' />
+                           <div
+                              key={client.id}
+                              className={`flex-1 ${styles.flexCenter} sm:min-w-[192px] min-w-[120px] m-5`}
+                           >
+                              <img
+                                 src={client.logo}
+                                 alt='client_logo'
+                                 className='sm:w-[192px] w-[100px] object-contain'
+                              />
                            </div>
                         ))}
                      </div>
                   </section>
                   {/* <Testimonials /> */}
-                  <section id='clients' className={`${styles.paddingY} ${styles.flexCenter} flex-col relative `}>
+                  <section
+                     id='clients'
+                     className={`${styles.paddingY} ${styles.flexCenter} flex-col relative `}
+                  >
                      <div className='absolute z-[0] w-[60%] h-[60%] -right-[50%] rounded-full blue__gradient bottom-40' />
 
                      <div className='w-full flex justify-between items-center md:flex-row flex-col sm:mb-16 mb-6 relative z-[1]'>
@@ -245,7 +284,8 @@ const LandingPage: React.FC = () => {
                      <div className='flex-1 flex flex-col'>
                         <h2 className={styles.heading2}>Final call to action!</h2>
                         <p className={`${styles.paragraph} max-w-[470px] mt-5`}>
-                           This is the last opportunity to engage with the viewer on the landing page. Make sure they convert!
+                           This is the last opportunity to engage with the viewer on the landing
+                           page. Make sure they convert!
                         </p>
                      </div>
 
@@ -257,11 +297,18 @@ const LandingPage: React.FC = () => {
                   <section className={`${styles.flexCenter} ${styles.paddingY} flex-col`}>
                      <div className={`${styles.flexStart} md:flex-row flex-col mb-8 w-full`}>
                         <div className='flex-[1] flex flex-col justify-start mr-10'>
-                           <img src={logo} alt='hoobank' className='w-[266px] h-[72.14px] object-contain' />
+                           <img
+                              src={logo}
+                              alt='hoobank'
+                              className='w-[266px] h-[72.14px] object-contain'
+                           />
                         </div>
                         <div className='flex-[1.5] w-full flex flex-row justify-between flex-wrap md:mt-0 mt-10'>
                            {footerLinks.map((footerlink) => (
-                              <div key={footerlink.title} className={`flex flex-col ss:my-0 my-4 min-w-[150px]`}>
+                              <div
+                                 key={footerlink.title}
+                                 className={`flex flex-col ss:my-0 my-4 min-w-[150px]`}
+                              >
                                  <h4 className='font-poppins font-medium text-[18px] leading-[27px] text-white'>
                                     {footerlink.title}
                                  </h4>

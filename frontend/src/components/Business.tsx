@@ -30,10 +30,8 @@ type Feature = {
 
 const Business: React.FC = () => (
    <section id='features' className={layout.section}>
-      <div className={layout.sectionInfo}>
-         <h2 className={styles.heading2}>
-            With so much data today, <br className='sm:block hidden' /> we could all use a hand.
-         </h2>
+      <div className={`${layout.sectionInfo} text-gradient`}>
+         <h2 className={styles.heading2}>Intuitive and scalable analytics solutions</h2>
          <p className={`${styles.paragraph} max-w-[470px] mt-5`}>
             The ability to organize analytics then schedule their auto-refreshing deployment and notifications allows for
             near-instant responsiveness with a complete data-backed contextualization of the situation.

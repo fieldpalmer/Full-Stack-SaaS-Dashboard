@@ -17,6 +17,10 @@ import robot from './robot.png';
 import menu from './menu.svg';
 import close from './close.svg';
 import quotes from './quotes.svg';
+import discogs from './discogs.svg';
+import imdb from './imdb.svg';
+import spotify from './spotify.svg';
+import youtube from './youtube.svg';
 
 export {
    bill,
@@ -37,5 +41,9 @@ export {
    robot,
    menu,
    close,
-   quotes
+   quotes,
+   discogs,
+   imdb,
+   spotify,
+   youtube
 };

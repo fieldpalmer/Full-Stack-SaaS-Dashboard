@@ -27,18 +27,18 @@ const Signup: React.FC = () => {
    };
 
    return (
-      <div className='flex justify-center items-center mt-10'>
+      <div className='items-center mt-10'>
          <form className='relative' onSubmit={handleSubmit}>
-            <div className='absolute top-4 left-3'>
+            {/* <div className='absolute top-4 left-3'>
                <i className='fa fa-envelope text-gray-400 z-20 hover:text-gray-500' />
-            </div>
+            </div> */}
             <input
                type='email'
                value={email}
                onChange={(e) => setEmail(e.target.value)}
                required
                className='h-14 w-96 pl-10 pr-20 rounded-lg z-0 focus:shadow focus:outline-none'
-               placeholder='Enter your email'
+               placeholder='Sign up for a demo'
             />
             <div className='absolute top-2 right-2'>
                <button
