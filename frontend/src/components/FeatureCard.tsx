@@ -1,5 +1,4 @@
 import React from 'react';
-import styles from '../style';
 import { features } from '../constants';
 
 type FeatureCardProps = {
@@ -16,7 +15,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, subtitle, conten
          index !== features.length - 1 ? 'mb-6' : 'mb-0'
       } feature-card`}
    >
-      <div className={`w-[64px] h-[64px] rounded-full ${styles.flexCenter} bg-dimBlue`}>
+      <div className={`w-[64px] h-[64px] rounded-full flex justify-center items-center bg-dimBlue`}>
          <img src={icon} alt='star' className='w-[50%] h-[50%] object-contain' />
       </div>
       <div className='flex-1 flex flex-col ml-3'>

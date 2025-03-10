@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import styles from '../style';
 
 const Signup: React.FC = () => {
    const [email, setEmail] = useState('');
@@ -43,7 +42,7 @@ const Signup: React.FC = () => {
             <div className='absolute top-2 right-2'>
                <button
                   type='submit'
-                  className={`py-2 px-6 font-poppins font-medium text-[18px] text-primary bg-blue-gradient rounded-[10px] outline-none ${styles}`}
+                  className='py-2 px-6 font-poppins font-medium text-[18px] text-primary bg-blue-gradient rounded-[10px] outline-none'
                >
                   Submit
                </button>
