@@ -46,13 +46,7 @@ interface SocialMedia {
    link: string;
 }
 
-export const navLinks: NavLink[] = [
-   { id: 'home', title: 'Home' },
-   { id: 'features', title: 'Features' },
-   { id: 'product', title: 'Product' },
-   { id: 'clients', title: 'Clients' },
-   { id: 'dashboard', title: 'Dashboard' }
-];
+export const navLinks: NavLink[] = [{ id: 'dashboard', title: 'Dashboard' }];
 
 export const features: Feature[] = [
    {

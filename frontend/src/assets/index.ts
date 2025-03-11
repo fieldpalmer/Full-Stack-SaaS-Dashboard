@@ -10,5 +10,20 @@ import menu from './menu.svg';
 import close from './close.svg';
 import quotes from './quotes.svg';
 import dashboard from './dashboard.png';
+import iconflow from './iconflow.png';
 
-export { bill, avatar, send, shield, star, card, logo, robot, menu, close, quotes, dashboard };
+export {
+   bill,
+   avatar,
+   send,
+   shield,
+   star,
+   card,
+   logo,
+   robot,
+   menu,
+   close,
+   quotes,
+   dashboard,
+   iconflow
+};
