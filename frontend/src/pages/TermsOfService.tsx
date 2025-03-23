@@ -3,7 +3,7 @@ import type { TermsOfService } from '../constants';
 const TermsOfService = () => {
      return (
           <div>
-               <div className='flex justify-center items-center min-h-screen w-screen bg-gradient-to-br from-blue-950 to-green-950 text-white p-6'>
+               <div className='flex justify-center items-center min-h-screen w-[100%] bg-gradient-to-br from-blue-950 to-green-950 text-white p-6'>
                     <section className='w-full flex flex-col items-center justify-center'>
                          <div className='w-full mx-auto text-white'>
                               <h1 className='text-4xl font-bold mb-6'>Terms & Services</h1>

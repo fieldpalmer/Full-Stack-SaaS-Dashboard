@@ -4,9 +4,8 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import MoviesTable from './pages/MoviesTables';
-import ActorsTable from './pages/ActorsTable';
-import DirectorsTable from './pages/DirectorsTable';
-import GenresTable from './pages/GenresTable';
+import MusicTable from './pages/MusicTable';
+import BooksTable from './pages/BooksTable';
 import LandingPage from './pages/LandingPage';
 import About from './pages/About';
 import Explore from './pages/Explore';
@@ -15,7 +14,7 @@ import Contact from './pages/Contact';
 import TermsOfService from './pages/TermsOfService';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-
+import MovieDataGrid from './components/MovieDataGrid';
 export default function App() {
      return (
           <>
@@ -41,32 +40,24 @@ export default function App() {
                          path='/dashboard/movies-table'
                          element={
                               <ProtectedRoute>
-                                   <MoviesTable />
-                              </ProtectedRoute>
-                         }
-                    />
-
-                    <Route
-                         path='/dashboard/actors'
-                         element={
-                              <ProtectedRoute>
-                                   <ActorsTable />
+                                   {/* <MoviesTable /> */}
+                                   <MovieDataGrid />
                               </ProtectedRoute>
                          }
                     />
                     <Route
-                         path='/dashboard/directors'
+                         path='/dashboard/music-table'
                          element={
                               <ProtectedRoute>
-                                   <DirectorsTable />
+                                   <MusicTable />
                               </ProtectedRoute>
                          }
                     />
                     <Route
-                         path='/dashboard/genres'
+                         path='/dashboard/books-table'
                          element={
                               <ProtectedRoute>
-                                   <GenresTable />
+                                   <BooksTable />
                               </ProtectedRoute>
                          }
                     />

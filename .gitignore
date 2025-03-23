@@ -1,2 +1,11 @@
 backend/.env
 backend/node_modules
+frontend/node_modules
+frontend/dist
+frontend/build
+frontend/public/index.html
+frontend/public/manifest.json
+frontend/public/robots.txt
+frontend/public/service-worker.js
+frontend/public/workbox-*.js
+frontend/.env

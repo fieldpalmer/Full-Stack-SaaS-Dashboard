@@ -3,7 +3,7 @@ import type { TeamMember } from '../constants';
 export default function About() {
      return (
           <div>
-               <div className='flex justify-center items-center min-h-screen w-screen bg-gradient-to-br from-blue-950 to-green-950 text-white p-6'>
+               <div className='flex justify-center items-center min-h-screen w-[100%] bg-gradient-to-br from-blue-950 to-green-950 text-white p-6'>
                     <section className='w-full flex flex-col items-center justify-center'>
                          <h1 className='text-4xl font-bold text-white'>Who We Are</h1>
 

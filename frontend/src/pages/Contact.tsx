@@ -51,7 +51,7 @@ export default function Contact(): JSX.Element {
 
      return (
           <div>
-               <div className='flex justify-center items-center min-h-screen w-screen bg-gradient-to-br from-blue-950 to-green-950 text-white p-6'>
+               <div className='flex justify-center items-center min-h-screen w-[100%] bg-gradient-to-br from-blue-950 to-green-950 text-white p-6'>
                     <form onSubmit={handleSubmit} className='bg-black/75 p-6 shadow-md rounded w-full max-w-lg'>
                          <h2 className='text-3xl mb-6 text-center'>Contact Us</h2>
 
