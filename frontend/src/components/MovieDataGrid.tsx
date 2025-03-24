@@ -138,13 +138,13 @@ const MovieDataGrid = () => {
 
      if (loading) {
           return (
-               <div className='flex justify-center items-center h-40'>
+               <div className='flex justify-center items-center h-[1080px]'>
                     <FaSpinner className='text-purple-500 text-4xl animate-spin' />
                </div>
           );
      }
      return (
-          <div className='h-[900px]'>
+          <div className='h-[1080px]'>
                <AgGridReact
                     rowData={movies}
                     columnDefs={colDefs}
