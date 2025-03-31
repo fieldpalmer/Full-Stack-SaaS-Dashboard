@@ -3,8 +3,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
-import MoviesTable from './pages/MoviesTables';
-import MusicTable from './pages/MusicTable';
+import MusicDataGrid from './components/MusicDataGrid';
 import BooksTable from './pages/BooksTable';
 import LandingPage from './pages/LandingPage';
 import About from './pages/About';
@@ -49,7 +48,7 @@ export default function App() {
                          path='/dashboard/music-table'
                          element={
                               <ProtectedRoute>
-                                   <MusicTable />
+                                   <MusicDataGrid />
                               </ProtectedRoute>
                          }
                     />
@@ -58,17 +57,6 @@ export default function App() {
                          element={
                               <ProtectedRoute>
                                    <BooksTable />
-                              </ProtectedRoute>
-                         }
-                    />
-                    <Route
-                         path='/dashboard/my-media'
-                         element={
-                              <ProtectedRoute>
-                                   {/* replace with personal dashboard of movies */}
-                                   {/* include option to go through list and save records to user */}
-                                   {/* offer at registration too */}
-                                   <MoviesTable />
                               </ProtectedRoute>
                          }
                     />

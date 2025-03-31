@@ -9,3 +9,4 @@ frontend/public/robots.txt
 frontend/public/service-worker.js
 frontend/public/workbox-*.js
 frontend/.env
+node_modules

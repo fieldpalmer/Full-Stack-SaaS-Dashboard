@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
-// import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/Sidebar';
 import { FaSpinner } from 'react-icons/fa';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ModuleRegistry, ColDef, themeMaterial, colorSchemeDark } from 'ag-grid-community';
@@ -144,19 +144,22 @@ const MovieDataGrid = () => {
           );
      }
      return (
-          <div className='h-[1080px]'>
-               <AgGridReact
-                    rowData={movies}
-                    columnDefs={colDefs}
-                    defaultColDef={defaultColDef}
-                    // rowSelection={{ mode: 'multiRow', checkboxes: true }}
-                    theme={myTheme}
-                    pagination={pagination}
-                    paginationPageSize={paginationPageSize}
-                    paginationPageSizeSelector={paginationPageSizeSelector}
-                    rowHeight={rowHeight}
-                    // onSelectionChanged={handleSelectionChanged}
-               />
+          <div className='flex h-screen w-[100%] bg-gray-900 text-white'>
+               <Sidebar />
+               <div className='flex flex-col flex-1'>
+                    <AgGridReact
+                         rowData={movies}
+                         columnDefs={colDefs}
+                         defaultColDef={defaultColDef}
+                         // rowSelection={{ mode: 'multiRow', checkboxes: true }}
+                         theme={myTheme}
+                         pagination={pagination}
+                         paginationPageSize={paginationPageSize}
+                         paginationPageSizeSelector={paginationPageSizeSelector}
+                         rowHeight={rowHeight}
+                         // onSelectionChanged={handleSelectionChanged}
+                    />
+               </div>
           </div>
      );
 };

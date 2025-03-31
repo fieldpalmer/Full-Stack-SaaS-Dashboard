@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
+import axios from 'axios';
 
 dotenv.config();
 const app = express();
@@ -19,7 +20,7 @@ let db;
 async function connectDB() {
      try {
           await client.connect();
-          db = client.db('sample_mflix');
+          db = client.db('saas_dashboard');
           console.log('🔥 MongoDB Connected');
      } catch (error) {
           console.error('❌ MongoDB Connection Error:', error);
@@ -29,6 +30,8 @@ connectDB();
 
 const usersCollection = () => db.collection('users');
 const moviesCollection = () => db.collection('movies');
+const musicCollection = () => db.collection('music');
+const booksCollection = () => db.collection('books');
 
 app.post('/api/send-email', async (req, res) => {
      const { email } = req.body;
@@ -107,15 +110,6 @@ app.post('/login', async (req, res) => {
      }
 });
 
-app.get('/dashboard', authenticateToken, async (req, res) => {
-     try {
-          const users = await usersCollection().find().toArray();
-          res.json(users);
-     } catch (err) {
-          res.status(500).json({ error: err.message });
-     }
-});
-
 app.get('/api/users', authenticateToken, async (req, res) => {
      try {
           const totalUsers = await usersCollection().countDocuments();
@@ -135,32 +129,27 @@ app.get('/api/users', authenticateToken, async (req, res) => {
 app.get('/api/movies', authenticateToken, async (req, res) => {
      try {
           const moviesCollection = db.collection('movies');
-          // const page = parseInt(req.query.page) || 1;
-          // const limit = parseInt(req.query.limit) || 100;
-          // const skip = (page - 1) * limit;
           const sortField = req.query.sortField || 'year';
           const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
           const genreFilter = req.query.genre ? { genres: req.query.genre } : {};
           const ratingFilter = req.query.rating ? { rated: req.query.rating } : {};
           const yearFilter = req.query.year ? { year: parseInt(req.query.year) } : {};
 
-          // ✅ Exclude documents where any required field is missing
           const requiredFieldsFilter = {
                title: { $exists: true, $ne: null },
                year: { $exists: true, $ne: null },
                runtime: { $exists: true, $ne: null },
-               genres: { $exists: true, $ne: null, $not: { $size: 0 } }, // Ensure genres array is not empty
-               directors: { $exists: true, $ne: null, $not: { $size: 0 } }, // Ensure directors array is not empty
+               genres: { $exists: true, $ne: null, $not: { $size: 0 } },
+               directors: { $exists: true, $ne: null, $not: { $size: 0 } },
                rated: { $exists: true, $ne: null },
                'tomatoes.viewer.meter': { $exists: true, $ne: null },
                plot: { $exists: true, $ne: null },
-               cast: { $exists: true, $ne: null, $not: { $size: 0 } }, // Ensure cast array is not empty
+               cast: { $exists: true, $ne: null, $not: { $size: 0 } },
                poster: { $exists: true, $ne: null },
-               languages: { $exists: true, $ne: null, $not: { $size: 0 } }, // Ensure languages array is not empty
-               countries: { $exists: true, $ne: null, $not: { $size: 0 } } // Ensure countries array is not empty
+               languages: { $exists: true, $ne: null, $not: { $size: 0 } },
+               countries: { $exists: true, $ne: null, $not: { $size: 0 } }
           };
 
-          // ✅ Merge filters
           const filterQuery = {
                ...genreFilter,
                ...ratingFilter,
@@ -187,11 +176,7 @@ app.get('/api/movies', authenticateToken, async (req, res) => {
                     }
                })
                .sort({ [sortField]: sortOrder })
-               // .skip(skip)
-               // .limit(limit)
                .toArray();
-
-          // const totalMovies = await moviesCollection.countDocuments(filterQuery);
 
           res.json({
                movies: movies.map((movie) => ({
@@ -210,8 +195,6 @@ app.get('/api/movies', authenticateToken, async (req, res) => {
                     languages: movie.languages,
                     countries: movie.countries
                }))
-               // totalPages: Math.ceil(totalMovies / limit),
-               // currentPage: page
           });
      } catch (err) {
           console.error('❌ Error fetching movies:', err.message);
@@ -358,107 +341,53 @@ app.get('/api/movie-stats', authenticateToken, async (req, res) => {
      }
 });
 
-app.get('/api/actors', authenticateToken, async (req, res) => {
+app.get('/api/music', authenticateToken, async (req, res) => {
      try {
-          const moviesCollection = db.collection('movies');
+          const spotifyToken = req.header('Spotify-Token');
+          if (!spotifyToken) {
+               return res.status(401).json({ error: 'Spotify token is required' });
+          }
 
-          const actorsAggregation = await moviesCollection
-               .aggregate([
-                    { $unwind: '$cast' },
-                    {
-                         $group: {
-                              _id: '$cast',
-                              movieCount: { $sum: 1 },
-                              avgRuntime: { $avg: '$runtime' },
-                              avgRating: { $avg: '$tomatoes.viewer.meter' },
-                              years: { $push: '$year' }
-                         }
-                    },
-                    { $sort: { movieCount: -1 } },
-                    { $limit: 50 }
-               ])
-               .toArray();
+          const timeRange = req.query.time_range || 'medium_term'; // short_term, medium_term, or long_term
+          const limit = Math.min(parseInt(req.query.limit) || 50, 50); // Spotify's max is 50
+          const offset = parseInt(req.query.offset) || 0;
 
-          // Calculate median year
-          actorsAggregation.forEach((actor) => {
-               const sortedYears = actor.years.filter((y) => y).sort((a, b) => a - b);
-               actor.medianYear = sortedYears.length ? sortedYears[Math.floor(sortedYears.length / 2)] : 'N/A';
-               delete actor.years;
+          const response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
+               headers: {
+                    Authorization: `Bearer ${spotifyToken}`,
+                    'Content-Type': 'application/json'
+               },
+               params: {
+                    time_range,
+                    limit,
+                    offset
+               }
           });
 
-          res.json(actorsAggregation);
-     } catch (err) {
-          console.error('❌ Error fetching actors:', err.message);
-          res.status(500).json({ error: err.message });
-     }
-});
+          const artists = response.data.items.map((artist) => ({
+               id: artist.id,
+               name: artist.name,
+               type: artist.type,
+               genres: artist.genres || [],
+               image: artist.images?.[0]?.url || null,
+               popularity: artist.popularity || 0,
+               followers: artist.followers?.total || 0,
+               spotify_url: artist.external_urls?.spotify || null
+          }));
 
-app.get('/api/directors', authenticateToken, async (req, res) => {
-     try {
-          const moviesCollection = db.collection('movies');
-
-          const directorsAggregation = await moviesCollection
-               .aggregate([
-                    { $unwind: '$directors' },
-                    {
-                         $group: {
-                              _id: '$directors',
-                              movieCount: { $sum: 1 },
-                              avgRuntime: { $avg: '$runtime' },
-                              avgRating: { $avg: '$tomatoes.viewer.meter' },
-                              years: { $push: '$year' }
-                         }
-                    },
-                    { $sort: { movieCount: -1 } },
-                    { $limit: 50 }
-               ])
-               .toArray();
-
-          // Calculate median year
-          directorsAggregation.forEach((director) => {
-               const sortedYears = director.years.filter((y) => y).sort((a, b) => a - b);
-               director.medianYear = sortedYears.length ? sortedYears[Math.floor(sortedYears.length / 2)] : 'N/A';
-               delete director.years;
+          res.json({
+               artists,
+               total: response.data.total,
+               limit: response.data.limit,
+               offset: response.data.offset,
+               next: response.data.next,
+               previous: response.data.previous
           });
-
-          res.json(directorsAggregation);
-     } catch (err) {
-          console.error('❌ Error fetching directors:', err.message);
-          res.status(500).json({ error: err.message });
-     }
-});
-
-app.get('/api/genres', authenticateToken, async (req, res) => {
-     try {
-          const moviesCollection = db.collection('movies');
-
-          const genresAggregation = await moviesCollection
-               .aggregate([
-                    { $unwind: '$genres' },
-                    {
-                         $group: {
-                              _id: '$genres',
-                              movieCount: { $sum: 1 },
-                              avgRuntime: { $avg: '$runtime' },
-                              avgRating: { $avg: '$tomatoes.viewer.meter' },
-                              years: { $push: '$year' }
-                         }
-                    },
-                    { $sort: { movieCount: -1 } }
-               ])
-               .toArray();
-
-          // Calculate median year
-          genresAggregation.forEach((genre) => {
-               const sortedYears = genre.years.filter((y) => y).sort((a, b) => a - b);
-               genre.medianYear = sortedYears.length ? sortedYears[Math.floor(sortedYears.length / 2)] : 'N/A';
-               delete genre.years;
+     } catch (error) {
+          console.error('Error fetching top artists:', error.response?.data || error.message);
+          res.status(error.response?.status || 500).json({
+               error: error.response?.data?.error?.message || 'Failed to fetch top artists'
           });
-
-          res.json(genresAggregation);
-     } catch (err) {
-          console.error('❌ Error fetching genres:', err.message);
-          res.status(500).json({ error: err.message });
      }
 });
 
