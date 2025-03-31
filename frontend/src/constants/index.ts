@@ -93,8 +93,7 @@ export const sidebarLinks: SidebarLink[] = [
      { id: 'overview-sidebar', name: 'Overview', path: '/dashboard' },
      { id: 'movies-sidebar', name: 'Movies', path: '/dashboard/movies-table' },
      { id: 'music-sidebar', name: 'Music', path: '/dashboard/music-table' },
-     { id: 'books-sidebar', name: 'Books', path: '/dashboard/books-table' },
-     { id: 'my-media-sidebar', name: 'My Media', path: '/dashboard/my-media' }
+     { id: 'books-sidebar', name: 'Books', path: '/dashboard/books-table' }
 ];
 
 export const features: Feature[] = [

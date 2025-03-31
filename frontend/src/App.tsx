@@ -4,7 +4,6 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import MusicDataGrid from './components/MusicDataGrid';
-import BooksTable from './pages/BooksTable';
 import LandingPage from './pages/LandingPage';
 import About from './pages/About';
 import Explore from './pages/Explore';
@@ -14,6 +13,8 @@ import TermsOfService from './pages/TermsOfService';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import MovieDataGrid from './components/MovieDataGrid';
+import BooksDataGrid from './components/BooksDataGrid';
+
 export default function App() {
      return (
           <>
@@ -39,7 +40,6 @@ export default function App() {
                          path='/dashboard/movies-table'
                          element={
                               <ProtectedRoute>
-                                   {/* <MoviesTable /> */}
                                    <MovieDataGrid />
                               </ProtectedRoute>
                          }
@@ -56,7 +56,7 @@ export default function App() {
                          path='/dashboard/books-table'
                          element={
                               <ProtectedRoute>
-                                   <BooksTable />
+                                   <BooksDataGrid />
                               </ProtectedRoute>
                          }
                     />

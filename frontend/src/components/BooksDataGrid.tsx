@@ -9,16 +9,20 @@ import '../App.css';
 ModuleRegistry.registerModules([AllCommunityModule]);
 const myTheme = themeMaterial.withPart(colorSchemeDark).withParams({ headerTextColor: 'white' });
 
-interface MusicData {
+interface BookData {
      _id: string;
-     name: string;
-     listeners: number;
-     image: string;
-     url: string;
+     title: string;
+     authors: string[];
+     description: string;
+     publishedDate: string;
+     categories: string[];
+     thumbnail: string;
+     infoLink: string;
+     googleId: string;
 }
 
-const MusicDataGrid = () => {
-     const [music, setMusic] = useState<MusicData[]>([]);
+const BooksDataGrid = () => {
+     const [books, setBooks] = useState<BookData[]>([]);
      const [loading, setLoading] = useState<boolean>(true);
      const [favorites, setFavorites] = useState<string[]>([]);
 
@@ -40,49 +44,43 @@ const MusicDataGrid = () => {
      const paginationPageSizeSelector = [50];
      const rowHeight = 100;
 
-     const handleAddToFavorites = async (musicId: string) => {
+     const handleAddToFavorites = async (bookId: string) => {
           try {
                const token = localStorage.getItem('token');
                await axios.post(
-                    `http://localhost:5001/api/favorites/music/${musicId}`,
+                    `http://localhost:5001/api/favorites/books/${bookId}`,
                     {},
                     {
                          headers: { Authorization: `Bearer ${token}` }
                     }
                );
-               setFavorites((prev) => [...prev, musicId]);
-               alert('Artist added to favorites!');
+               setFavorites((prev) => [...prev, bookId]);
+               alert('Book added to favorites!');
           } catch (error) {
                if (axios.isAxiosError(error) && error.response?.status === 400) {
-                    alert('This artist is already in your favorites!');
+                    alert('This book is already in your favorites!');
                } else {
                     console.error('Error adding to favorites:', error);
-                    alert('Failed to add artist to favorites');
+                    alert('Failed to add book to favorites');
                }
           }
      };
 
-     const [colDefs] = useState<ColDef<MusicData>[]>([
+     const [colDefs] = useState<ColDef<BookData>[]>([
           {
-               field: 'image',
-               headerName: 'Image',
+               field: 'thumbnail',
+               headerName: 'Cover',
                autoHeight: true,
                cellRenderer: (params: { value: string }) => {
-                    const fallbackImage = 'https://dummyimage.com/100x100/cccccc/ffffff.png&text=No+Image';
+                    const fallbackImage = 'https://dummyimage.com/100x150/cccccc/ffffff.png&text=No+Cover';
                     if (!params.value) {
-                         return (
-                              <img
-                                   src={fallbackImage}
-                                   alt='No image available'
-                                   style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                              />
-                         );
+                         return <img src={fallbackImage} alt='No cover available' style={{ width: '100px', height: 'auto' }} />;
                     }
                     return (
                          <img
                               src={params.value}
-                              alt='Artist'
-                              style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                              alt='Book cover'
+                              style={{ width: '100px', height: 'auto' }}
                               onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                                    const img = e.target as HTMLImageElement;
                                    img.onerror = null;
@@ -92,28 +90,45 @@ const MusicDataGrid = () => {
                     );
                }
           },
-          { field: 'name', flex: 2, cellStyle: { display: 'flex', alignItems: 'center' } },
+          { field: 'title', flex: 2, cellStyle: { display: 'flex', alignItems: 'center' } },
           {
-               field: 'listeners',
-               headerName: 'Listeners',
+               field: 'authors',
+               headerName: 'Authors',
+               flex: 2,
                cellStyle: { display: 'flex', alignItems: 'center' },
-               valueFormatter: (params) => {
-                    return new Intl.NumberFormat().format(params.value);
-               }
+               valueFormatter: (params) => (Array.isArray(params.value) ? params.value.join(', ') : params.value)
           },
           {
-               field: 'url',
-               headerName: 'Last.fm Link',
+               field: 'publishedDate',
+               headerName: 'Published Date',
+               cellStyle: { display: 'flex', alignItems: 'center' }
+          },
+          {
+               field: 'categories',
+               headerName: 'Categories',
+               flex: 2,
+               cellStyle: { display: 'flex', alignItems: 'center' },
+               valueFormatter: (params) => (Array.isArray(params.value) ? params.value.join(', ') : params.value)
+          },
+          {
+               field: 'description',
+               flex: 3,
+               wrapText: true,
+               cellStyle: { display: 'flex', alignItems: 'center', whiteSpace: 'normal', lineHeight: '1.3' }
+          },
+          {
+               field: 'infoLink',
+               headerName: 'Google Books Link',
                cellRenderer: (params: { value: string }) => (
                     <a href={params.value} target='_blank' rel='noopener noreferrer' className='text-blue-400 hover:text-blue-300'>
-                         Open in Last.fm
+                         Open in Google Books
                     </a>
                ),
                cellStyle: { display: 'flex', alignItems: 'center' }
           },
           {
                headerName: 'Add to Favorites',
-               cellRenderer: (params: { data: MusicData }) => (
+               cellRenderer: (params: { data: BookData }) => (
                     <button
                          onClick={() => handleAddToFavorites(params.data._id)}
                          className={`flex items-center gap-2 px-3 py-1 rounded ${
@@ -128,23 +143,23 @@ const MusicDataGrid = () => {
           }
      ]);
 
-     const fetchMusic = useCallback(async () => {
+     const fetchBooks = useCallback(async () => {
           setLoading(true);
           try {
                const token = localStorage.getItem('token');
-               const { data } = await axios.get('http://localhost:5001/api/music/', {
+               const { data } = await axios.get('http://localhost:5001/api/books/', {
                     headers: { Authorization: `Bearer ${token}` }
                });
-               setMusic(data.music);
+               setBooks(data.books);
           } catch (error) {
-               console.error('Error fetching music:', error);
+               console.error('Error fetching books:', error);
           }
           setLoading(false);
      }, []);
 
      useEffect(() => {
-          fetchMusic();
-     }, [fetchMusic]);
+          fetchBooks();
+     }, [fetchBooks]);
 
      if (loading) {
           return (
@@ -160,7 +175,7 @@ const MusicDataGrid = () => {
                <div className='flex flex-col flex-1 p-4'>
                     <div className='flex-1'>
                          <AgGridReact
-                              rowData={music}
+                              rowData={books}
                               columnDefs={colDefs}
                               defaultColDef={defaultColDef}
                               theme={myTheme}
@@ -175,4 +190,4 @@ const MusicDataGrid = () => {
      );
 };
 
-export default MusicDataGrid;
+export default BooksDataGrid;
