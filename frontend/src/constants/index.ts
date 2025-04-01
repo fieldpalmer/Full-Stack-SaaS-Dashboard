@@ -121,8 +121,8 @@ export const features: Feature[] = [
 ];
 
 export const stats: Stat[] = [
-     { id: 'stats-2', title: 'Media Databases', value: '20+' },
-     { id: 'stats-1', title: 'Records Available', value: '3,000+' },
+     { id: 'stats-2', title: 'Media Databases', value: '3' },
+     { id: 'stats-1', title: 'Records Available', value: '200+' },
      { id: 'stats-3', title: 'Convenient Hub', value: '1' }
 ];
 
