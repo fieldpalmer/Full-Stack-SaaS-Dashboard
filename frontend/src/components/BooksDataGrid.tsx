@@ -48,7 +48,7 @@ const BooksDataGrid = () => {
           try {
                const token = localStorage.getItem('token');
                await axios.post(
-                    `http://localhost:5001/api/favorites/books/${bookId}`,
+                    `https://full-stack-saas-dashboard.onrender.com/api/favorites/books/${bookId}`,
                     {},
                     {
                          headers: { Authorization: `Bearer ${token}` }
@@ -147,7 +147,7 @@ const BooksDataGrid = () => {
           setLoading(true);
           try {
                const token = localStorage.getItem('token');
-               const { data } = await axios.get('http://localhost:5001/api/books/', {
+               const { data } = await axios.get('https://full-stack-saas-dashboard.onrender.com/api/books/', {
                     headers: { Authorization: `Bearer ${token}` }
                });
                setBooks(data.books);

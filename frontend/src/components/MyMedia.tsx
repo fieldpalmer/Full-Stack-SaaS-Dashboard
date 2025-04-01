@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaSpinner, FaHeart, FaFilm, FaBook, FaMusic } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -51,7 +51,7 @@ const MyMedia = () => {
           const fetchFavorites = async () => {
                try {
                     const token = localStorage.getItem('token');
-                    const response = await axios.get('http://localhost:5001/api/favorites', {
+                    const response = await axios.get('https://full-stack-saas-dashboard.onrender.com/api/favorites', {
                          headers: { Authorization: `Bearer ${token}` }
                     });
                     setFavorites(response.data);

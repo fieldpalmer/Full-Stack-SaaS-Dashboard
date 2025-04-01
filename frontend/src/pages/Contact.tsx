@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, JSX } from 'react';
+import { useState, FormEvent, JSX } from 'react';
 import emailjs from 'emailjs-com';
 
 interface SubmitStatus {

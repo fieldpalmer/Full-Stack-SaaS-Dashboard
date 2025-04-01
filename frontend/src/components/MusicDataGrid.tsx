@@ -44,7 +44,7 @@ const MusicDataGrid = () => {
           try {
                const token = localStorage.getItem('token');
                await axios.post(
-                    `http://localhost:5001/api/favorites/music/${musicId}`,
+                    `https://full-stack-saas-dashboard.onrender.com/api/favorites/music/${musicId}`,
                     {},
                     {
                          headers: { Authorization: `Bearer ${token}` }
@@ -132,7 +132,7 @@ const MusicDataGrid = () => {
           setLoading(true);
           try {
                const token = localStorage.getItem('token');
-               const { data } = await axios.get('http://localhost:5001/api/music/', {
+               const { data } = await axios.get('https://full-stack-saas-dashboard.onrender.com/api/music/', {
                     headers: { Authorization: `Bearer ${token}` }
                });
                setMusic(data.music);

@@ -47,7 +47,7 @@ const MovieDataGrid = () => {
           try {
                const token = localStorage.getItem('token');
                await axios.post(
-                    `http://localhost:5001/api/favorites/movies/${movieId}`,
+                    `https://full-stack-saas-dashboard.onrender.com/api/favorites/movies/${movieId}`,
                     {},
                     {
                          headers: { Authorization: `Bearer ${token}` }
@@ -153,7 +153,7 @@ const MovieDataGrid = () => {
           setLoading(true);
           try {
                const token = localStorage.getItem('token');
-               const { data } = await axios.get('http://localhost:5001/api/movies/', {
+               const { data } = await axios.get('https://full-stack-saas-dashboard.onrender.com/api/movies/', {
                     headers: { Authorization: `Bearer ${token}` }
                });
                setMovies(data.movies);

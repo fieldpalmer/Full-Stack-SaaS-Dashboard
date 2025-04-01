@@ -5,9 +5,9 @@ import { AuthProvider } from './context/AuthContext';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-   <Router>
-      <AuthProvider>
-         <App />
-      </AuthProvider>
-   </Router>
+     <Router basename='/Full-Stack-SaaS-Dashboard'>
+          <AuthProvider>
+               <App />
+          </AuthProvider>
+     </Router>
 );

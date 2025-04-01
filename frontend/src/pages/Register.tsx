@@ -12,7 +12,7 @@ export default function Register() {
      const handleSubmit = async (e: React.FormEvent) => {
           e.preventDefault();
           try {
-               await axios.post('http://localhost:5001/register', { name, email, password });
+               await axios.post('https://full-stack-saas-dashboard.onrender.com/register', { name, email, password });
                alert('Registration successful! Please log in.');
                navigate('/login');
           } catch (err: unknown) {
