@@ -25,6 +25,16 @@ body,
      width: 100%;
 }
 
+/* Override default link styles for dashboard navigation */
+.dashboard-nav a {
+     color: white !important;
+     text-decoration: none !important;
+}
+
+.dashboard-nav a:hover {
+     color: white !important;
+}
+
 a {
      font-weight: 500;
      color: #646cff;

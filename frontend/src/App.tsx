@@ -1,67 +1,44 @@
 import { Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import ScrollToTop from './components/ScrollToTop';
+// import Login from './pages/Login';
+// import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import ProtectedRoute from './components/ProtectedRoute';
-import MusicDataGrid from './components/MusicDataGrid';
-import LandingPage from './pages/LandingPage';
-import About from './pages/About';
-import Explore from './pages/Explore';
-import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
-import TermsOfService from './pages/TermsOfService';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import MovieDataGrid from './components/MovieDataGrid';
-import BooksDataGrid from './components/BooksDataGrid';
+import { useAuth } from './context/AuthContext';
+import { useEffect } from 'react';
 
-export default function App() {
+function AppContent() {
+     const { user, loading } = useAuth();
+
+     useEffect(() => {
+          if (!loading && !user) {
+               // Only create guest if explicitly needed
+               // createGuest();
+          }
+     }, [loading, user]);
+
+     if (loading) {
+          return <div>Loading...</div>;
+     }
+
      return (
           <>
                <Navbar />
+               <ScrollToTop />
                <Routes>
-                    <Route path='/' element={<LandingPage />} />
-                    <Route path='/login' element={<Login />} />
-                    <Route path='/register' element={<Register />} />
-                    <Route path='/about' element={<About />} />
-                    <Route path='/explore' element={<Explore />} />
+                    <Route path='/*' element={<Dashboard />} />
+                    {/* <Route path='/login' element={<Login />} /> */}
+                    {/* <Route path='/register' element={<Register />} /> */}
                     <Route path='/contact' element={<Contact />} />
-                    <Route path='/faq' element={<FAQ />} />
-                    <Route path='/tos' element={<TermsOfService />} />
-                    <Route
-                         path='/dashboard/*'
-                         element={
-                              <ProtectedRoute>
-                                   <Dashboard />
-                              </ProtectedRoute>
-                         }
-                    />
-                    <Route
-                         path='/dashboard/movies-table'
-                         element={
-                              <ProtectedRoute>
-                                   <MovieDataGrid />
-                              </ProtectedRoute>
-                         }
-                    />
-                    <Route
-                         path='/dashboard/music-table'
-                         element={
-                              <ProtectedRoute>
-                                   <MusicDataGrid />
-                              </ProtectedRoute>
-                         }
-                    />
-                    <Route
-                         path='/dashboard/books-table'
-                         element={
-                              <ProtectedRoute>
-                                   <BooksDataGrid />
-                              </ProtectedRoute>
-                         }
-                    />
+                    <Route path='/dashboard/*' element={<Dashboard />} />
                </Routes>
                <Footer />
           </>
      );
+}
+
+export default function App() {
+     return <AppContent />;
 }

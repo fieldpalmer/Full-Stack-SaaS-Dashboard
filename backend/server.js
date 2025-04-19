@@ -249,4 +249,57 @@ app.post('/api/favorites/books/:bookId', authenticateToken, async (req, res) => 
      }
 });
 
+// 🔐 Guest Authentication
+app.post('/api/auth/guest', async (req, res) => {
+     try {
+          // Create a guest user with a random email
+          const guestEmail = `guest_${Math.random().toString(36).substring(2, 15)}@example.com`;
+          const result = await usersCollection().insertOne({
+               name: 'Guest User',
+               email: guestEmail,
+               role: 'guest',
+               isGuest: true,
+               books: [],
+               movies: [],
+               music: []
+          });
+
+          const user = {
+               _id: result.insertedId,
+               name: 'Guest User',
+               email: guestEmail,
+               isGuest: true
+          };
+
+          const token = jwt.sign({ id: user._id.toString(), role: 'guest' }, process.env.JWT_SECRET, {
+               expiresIn: '24h'
+          });
+
+          res.json({ token, user });
+     } catch (err) {
+          console.error('Error creating guest account:', err);
+          res.status(500).json({ error: 'Failed to create guest account' });
+     }
+});
+
+// 🔐 Get Current User
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
+     try {
+          const user = await usersCollection().findOne({ _id: new ObjectId(req.user.id) });
+          if (!user) {
+               return res.status(404).json({ error: 'User not found' });
+          }
+          res.json({
+               _id: user._id,
+               name: user.name,
+               email: user.email,
+               role: user.role,
+               isGuest: user.isGuest || false
+          });
+     } catch (err) {
+          console.error('Error fetching user:', err);
+          res.status(500).json({ error: 'Failed to fetch user' });
+     }
+});
+
 app.listen(port, () => console.log(`🔥 Server running on port ${port}`));
