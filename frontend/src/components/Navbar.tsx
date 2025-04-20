@@ -113,26 +113,12 @@ const Navbar = () => {
                          <div
                               className={`${
                                    toggle ? 'flex' : 'hidden'
-                              } p-6 bg-gray-900 absolute top-20 right-0 mx-4 my-2 min-w-[140px] rounded-xl sidebar`}
+                              } p-4 bg-gray-900 absolute top-20 right-0 mx-2 my-2 min-w-[140px] rounded-xl sidebar`}
                          >
                               <ul className='list-none flex flex-col justify-end items-center flex-1'>
-                                   {navLinks.map((nav: NavLink, index: number) => (
-                                        <li
-                                             key={nav.id}
-                                             onClick={() => {
-                                                  setActive(nav.title);
-                                                  setToggle(false);
-                                             }}
-                                             className={`font-poppins font-normal cursor-pointer text-[16px] ${
-                                                  active === nav.title ? 'text-blue-400' : 'text-gray-100'
-                                             } ${index === navLinks.length - 1 ? 'mb-0' : 'mb-4'}`}
-                                        >
-                                             <Link to={`${nav.id}`}>{nav.title}</Link>
-                                        </li>
-                                   ))}
                                    <div className='mt-4'>
                                         <div className='text-gray-100 mb-2'>Welcome, {user?.name || 'Guest'}</div>
-                                        {user ? (
+                                        {user && !user.isGuest ? (
                                              <div className='flex flex-col gap-2'>
                                                   <Link
                                                        to='/settings'
