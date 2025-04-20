@@ -8,6 +8,7 @@ import {
    ColDef,
    themeMaterial,
    colorSchemeDark,
+   ICellRendererParams,
 } from 'ag-grid-community';
 import { MusicStats, MusicData, ArtistStats } from '../types/interfaces';
 import MusicDataCard from '../components/stats/MusicDataCard';
@@ -136,99 +137,118 @@ const MusicTable = () => {
       []
    );
 
-   const [colDefs] = useState<ColDef<MusicData>[]>([
-      { field: 'name', flex: 2, cellStyle: { lineHeight: '1.2' } },
+   const colDefs: ColDef<MusicData>[] = [
       {
-         field: 'artist',
-         headerName: 'Artist',
-         cellStyle: { lineHeight: '1.2' },
-      },
-      {
-         field: 'album',
-         headerName: 'Album',
-         cellStyle: { lineHeight: '1.2' },
-      },
-      {
-         field: 'duration_ms',
-         headerName: 'Duration',
-         cellStyle: { lineHeight: '1.2' },
-         valueFormatter: params => {
-            const minutes = Math.floor(params.value / 60000);
-            const seconds = Math.floor((params.value % 60000) / 1000);
-            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+         field: 'image',
+         headerName: '',
+         width: 60,
+         cellRenderer: (params: ICellRendererParams<MusicData>) => {
+            return (
+               <div className="flex items-center justify-center h-full">
+                  <img
+                     src={params.data?.image}
+                     alt={params.data?.name}
+                     className="w-10 h-10 rounded-full object-cover"
+                     onError={e => {
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40';
+                     }}
+                  />
+               </div>
+            );
          },
       },
       {
-         field: 'popularity',
-         headerName: 'Popularity',
-         cellStyle: { lineHeight: '1.2' },
+         field: 'name',
+         headerName: 'Name',
+         flex: 1,
       },
       {
-         field: 'release_date',
-         headerName: 'Release Date',
-         cellStyle: { lineHeight: '1.2' },
+         field: 'listeners',
+         headerName: 'Listeners',
+         width: 120,
          valueFormatter: params => {
-            const date = new Date(params.value);
-            const month = date.toLocaleString('default', { month: 'short' });
-            const year = date.getFullYear();
-            return `${month}. ${year}`;
-         },
-      },
-      {
-         field: 'description',
-         headerName: 'Description',
-         flex: 3,
-         cellStyle: { lineHeight: '1.2' },
-         wrapText: true,
-         maxWidth: 400,
-         tooltipField: 'description',
-         valueFormatter: params => {
-            const text = params.value;
-            if (text && text.length > 200) {
-               return text.substring(0, 200) + '...';
+            const value = params.value as number;
+            if (value >= 1000000) {
+               return `${(value / 1000000).toFixed(1)}M`;
             }
-            return text;
+            if (value >= 1000) {
+               return `${(value / 1000).toFixed(1)}K`;
+            }
+            return value.toString();
          },
       },
       {
-         headerName: 'Add to Favorites',
-         cellRenderer: (params: { data: MusicData }) => (
-            <button
-               onClick={() => handleAddToFavorites(params.data._id)}
-               className={`flex items-center gap-2 px-3 py-1 rounded ${
-                  favorites.includes(params.data._id)
-                     ? 'bg-red-500 hover:bg-red-600'
-                     : 'bg-gray-700 hover:bg-gray-600'
-               } text-white transition-colors`}
-            >
-               <FaHeart
-                  className={favorites.includes(params.data._id) ? 'text-red-500' : 'text-white'}
-               />
-            </button>
-         ),
-         cellStyle: { lineHeight: '1.2' },
+         field: 'playcount',
+         headerName: 'Play Count',
+         width: 120,
+         valueFormatter: params => {
+            const value = params.value as number;
+            if (value >= 1000000) {
+               return `${(value / 1000000).toFixed(1)}M`;
+            }
+            if (value >= 1000) {
+               return `${(value / 1000).toFixed(1)}K`;
+            }
+            return value.toString();
+         },
       },
-   ]);
+      {
+         field: 'url',
+         headerName: 'URL',
+         width: 100,
+         cellRenderer: (params: ICellRendererParams<MusicData>) => {
+            const url = params.data?.url;
+            if (!url) return null;
+            return (
+               <a
+                  href={url as string}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-400"
+               >
+                  Link
+               </a>
+            );
+         },
+      },
+      {
+         headerName: 'Actions',
+         width: 120,
+         cellRenderer: (params: ICellRendererParams<MusicData>) => {
+            const isFavorite = favorites.some(m => m === params.data?._id);
+            return (
+               <button
+                  onClick={() => params.data?._id && handleToggleFavorite('music', params.data._id)}
+                  className={`p-2 rounded-full ${
+                     isFavorite
+                        ? 'bg-red-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+               >
+                  <FaHeart className="w-4 h-4" />
+               </button>
+            );
+         },
+      },
+   ];
 
-   const handleAddToFavorites = async (musicId: string) => {
+   const handleToggleFavorite = async (type: string, musicId: string) => {
       try {
          const token = localStorage.getItem('token');
          await axios.post(
-            `https://full-stack-saas-dashboard.onrender.com/api/favorites/music/${musicId}`,
+            `https://full-stack-saas-dashboard.onrender.com/api/favorites/${type}/${musicId}`,
             {},
             {
                headers: { Authorization: `Bearer ${token}` },
             }
          );
-         setFavorites(prev => [...prev, musicId]);
-         alert('Music added to favorites!');
-      } catch (error) {
-         if (axios.isAxiosError(error) && error.response?.status === 400) {
-            alert('This music is already in your favorites!');
-         } else {
-            console.error('Error adding to favorites:', error);
-            alert('Failed to add music to favorites');
+         if (type === 'music') {
+            setFavorites(prev => [...prev, musicId]);
          }
+         alert('Favorite status updated!');
+      } catch (error) {
+         console.error('Error toggling favorite:', error);
+         alert('Failed to update favorite status');
       }
    };
 
@@ -346,7 +366,7 @@ const MusicTable = () => {
                   </div>
                </div>
                {/* User Favorites Section */}
-               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600 ">
+               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600 h-[400px]">
                   <MusicDataCard title="Your Favorites" stats={favoriteMusicStats} />
                </div>
             </div>

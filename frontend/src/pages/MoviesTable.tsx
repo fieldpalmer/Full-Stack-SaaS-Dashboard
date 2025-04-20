@@ -210,24 +210,28 @@ const MoviesTable = () => {
             const fallbackImage = 'https://dummyimage.com/100x100/cccccc/ffffff.png&text=No+Image';
             if (!params.value) {
                return (
-                  <img
-                     src={fallbackImage}
-                     alt="No image available"
-                     style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                  />
+                  <div className="flex items-center justify-center h-full">
+                     <img
+                        src={fallbackImage}
+                        alt="No image available"
+                        className="w-10 h-10 rounded-full object-cover"
+                     />
+                  </div>
                );
             }
             return (
-               <img
-                  src={params.value}
-                  alt="Movie Poster"
-                  style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                     const img = e.target as HTMLImageElement;
-                     img.onerror = null;
-                     img.src = fallbackImage;
-                  }}
-               />
+               <div className="flex items-center justify-center h-full">
+                  <img
+                     src={params.value}
+                     alt="Movie Poster"
+                     className="w-10 h-10 rounded-full object-cover"
+                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                        const img = e.target as HTMLImageElement;
+                        img.onerror = null;
+                        img.src = fallbackImage;
+                     }}
+                  />
+               </div>
             );
          },
       },
@@ -249,13 +253,13 @@ const MoviesTable = () => {
             return params.value.toFixed(1);
          },
       },
-      // {
-      //      field: 'popularity',
-      //      headerName: 'Popularity',
-      //      valueFormatter: (params) => {
-      //           return Math.round(params.value).toString();
-      //      }
-      // },
+      {
+         field: 'popularity',
+         headerName: 'Popularity',
+         valueFormatter: params => {
+            return Math.round(params.value).toString();
+         },
+      },
       {
          field: 'overview',
          headerName: 'Overview',
@@ -272,25 +276,18 @@ const MoviesTable = () => {
             return text;
          },
       },
-      // {
-      //      field: 'tmdb_id',
-      //      headerName: 'TMDB ID',
-      //      cellStyle: { display: 'flex', alignItems: 'center' }
-      // },
       {
          headerName: 'Add to Favorites',
          cellRenderer: (params: { data: MovieData }) => (
             <button
                onClick={() => handleAddToFavorites(params.data._id)}
-               className={`flex items-center gap-2 px-3 py-1 rounded ${
+               className={`p-2 rounded-full ${
                   favorites.includes(params.data._id)
-                     ? 'bg-red-500 hover:bg-red-600'
-                     : 'bg-gray-700 hover:bg-gray-600'
-               } text-white transition-colors`}
+                     ? 'bg-red-500 text-white'
+                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+               }`}
             >
-               <FaHeart
-                  className={favorites.includes(params.data._id) ? 'text-red-500' : 'text-white'}
-               />
+               <FaHeart className="w-4 h-4" />
             </button>
          ),
          cellStyle: { display: 'flex', alignItems: 'center' },
@@ -489,13 +486,13 @@ const MoviesTable = () => {
                   </div>
                </div>
                {/* User Favorites Section */}
-               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600 ">
+               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600 h-[400px]">
                   <MovieDataCard title="Your Favorites" stats={favoriteMovieStats} />
                </div>
             </div>
 
             <div className="w-full md:w-2/3 mt-2 md:mt-0 flex-1">
-               <div className="ag-theme-quartz h-[400px] md:h-full w-full border border-gray-600 rounded-lg">
+               <div className="ag-theme-quartz h-[400px] md:h-full w-full border border-gray-700 rounded-lg">
                   <AgGridReact
                      rowData={movies}
                      columnDefs={colDefs}

@@ -98,15 +98,13 @@ export interface MovieData {
 export interface MusicData {
    _id: string;
    name: string;
-   artist: string;
-   album: string;
-   duration_ms: number;
-   popularity: number;
-   preview_url: string;
-   spotify_url: string;
-   spotify_id: string;
-   release_date: string;
-   description: string;
+   artist?: string;
+   album?: string;
+   listeners: number;
+   playcount: number;
+   image: string;
+   url: string;
+   type: 'artist' | 'track';
 }
 
 export interface ArtistStats {

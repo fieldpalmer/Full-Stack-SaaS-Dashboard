@@ -121,28 +121,33 @@ const BooksTable = () => {
       {
          field: 'thumbnail',
          headerName: 'Cover',
+         autoHeight: true,
          cellRenderer: (params: { value: string }) => {
             const fallbackImage = 'https://dummyimage.com/100x100/cccccc/ffffff.png&text=No+Image';
             if (!params.value) {
                return (
-                  <img
-                     src={fallbackImage}
-                     alt="No cover available"
-                     style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                  />
+                  <div className="flex items-center justify-center h-full">
+                     <img
+                        src={fallbackImage}
+                        alt="No image available"
+                        className="w-10 h-10 rounded-full object-cover"
+                     />
+                  </div>
                );
             }
             return (
-               <img
-                  src={params.value}
-                  alt="Book Cover"
-                  style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                     const img = e.target as HTMLImageElement;
-                     img.onerror = null;
-                     img.src = fallbackImage;
-                  }}
-               />
+               <div className="flex items-center justify-center h-full">
+                  <img
+                     src={params.value}
+                     alt="Book Cover"
+                     className="w-10 h-10 rounded-full object-cover"
+                     onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                        const img = e.target as HTMLImageElement;
+                        img.onerror = null;
+                        img.src = fallbackImage;
+                     }}
+                  />
+               </div>
             );
          },
       },
@@ -150,28 +155,34 @@ const BooksTable = () => {
       {
          field: 'authors',
          headerName: 'Authors',
-         cellStyle: { lineHeight: '1.2' },
+         flex: 2,
          valueFormatter: params => {
-            return Array.isArray(params.value) ? params.value.join(', ') : params.value;
-         },
-      },
-      {
-         field: 'categories',
-         headerName: 'Categories',
-         cellStyle: { lineHeight: '1.2' },
-         valueFormatter: params => {
-            return Array.isArray(params.value) ? params.value.join(', ') : params.value;
+            return params.value.join(', ');
          },
       },
       {
          field: 'publishedDate',
          headerName: 'Published Date',
-         cellStyle: { lineHeight: '1.2' },
          valueFormatter: params => {
             const date = new Date(params.value);
-            const month = date.toLocaleString('default', { month: 'short' });
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
             const year = date.getFullYear();
-            return `${month}. ${year}`;
+            return `${month}/${year}`;
+         },
+      },
+      {
+         field: 'pageCount',
+         headerName: 'Pages',
+         valueFormatter: params => {
+            return params.value ? params.value.toString() : 'N/A';
+         },
+      },
+      {
+         field: 'categories',
+         headerName: 'Categories',
+         flex: 2,
+         valueFormatter: params => {
+            return params.value.join(', ');
          },
       },
       {
@@ -187,26 +198,38 @@ const BooksTable = () => {
             if (text && text.length > 200) {
                return text.substring(0, 200) + '...';
             }
-            return text;
+            return text || 'No description available';
          },
+      },
+      {
+         field: 'infoLink',
+         headerName: 'Info Link',
+         cellRenderer: (params: { value: string }) => (
+            <a
+               href={params.value}
+               target="_blank"
+               rel="noopener noreferrer"
+               className="text-blue-500 hover:text-blue-600"
+            >
+               View on Google Books
+            </a>
+         ),
       },
       {
          headerName: 'Add to Favorites',
          cellRenderer: (params: { data: BookData }) => (
             <button
                onClick={() => handleAddToFavorites(params.data._id)}
-               className={`flex items-center gap-2 px-3 py-1 rounded ${
+               className={`p-2 rounded-full ${
                   favorites.includes(params.data._id)
-                     ? 'bg-red-500 hover:bg-red-600'
-                     : 'bg-gray-700 hover:bg-gray-600'
-               } text-white transition-colors`}
+                     ? 'bg-red-500 text-white'
+                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+               }`}
             >
-               <FaHeart
-                  className={favorites.includes(params.data._id) ? 'text-red-500' : 'text-white'}
-               />
+               <FaHeart className="w-4 h-4" />
             </button>
          ),
-         cellStyle: { lineHeight: '1.2' },
+         cellStyle: { display: 'flex', alignItems: 'center' },
       },
    ]);
 
@@ -358,13 +381,13 @@ const BooksTable = () => {
                   </div>
                </div>
                {/* User Favorites Section */}
-               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600 ">
+               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600 h-[400px]">
                   <BooksDataCard title="Your Favorites" stats={favoriteBookStats} />
                </div>
             </div>
 
             <div className="w-full md:w-2/3 mt-2 md:mt-0 flex-1">
-               <div className="ag-theme-quartz h-[400px] md:h-full w-full border border-gray-600 rounded-lg">
+               <div className="ag-theme-quartz h-[400px] md:h-full w-full border border-gray-700 rounded-lg">
                   <AgGridReact
                      rowData={books}
                      columnDefs={colDefs}
