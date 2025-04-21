@@ -8,6 +8,7 @@ import {
    ColDef,
    themeMaterial,
    colorSchemeDark,
+   ICellRendererParams,
 } from 'ag-grid-community';
 import { BookData, BookStats, YearDistribution } from '../types/interfaces';
 import '../App.css';
@@ -70,22 +71,47 @@ const BooksTable = () => {
    const handleAddToFavorites = async (bookId: string) => {
       try {
          const token = localStorage.getItem('token');
-         await axios.post(
-            `https://full-stack-saas-dashboard.onrender.com/api/favorites/books/${bookId}`,
-            {},
-            {
+         if (favorites.includes(bookId)) {
+            await axios.delete(`${API_BASE_URL}/api/favorites/books/${bookId}`, {
                headers: { Authorization: `Bearer ${token}` },
-            }
-         );
-         setFavorites(prev => [...prev, bookId]);
-         alert('Book added to favorites!');
-      } catch (error) {
-         if (axios.isAxiosError(error) && error.response?.status === 400) {
-            alert('This book is already in your favorites!');
+            });
+            setFavorites(prev => prev.filter(id => id !== bookId));
          } else {
-            console.error('Error adding to favorites:', error);
-            alert('Failed to add book to favorites');
+            await axios.post(
+               `${API_BASE_URL}/api/favorites/books/${bookId}`,
+               {},
+               {
+                  headers: { Authorization: `Bearer ${token}` },
+               }
+            );
+            setFavorites(prev => [...prev, bookId]);
          }
+         alert('Favorite status updated!');
+
+         // Refresh stats after toggling favorite
+         const [booksRes, favoritesRes] = await Promise.all([
+            axios.get(`${API_BASE_URL}/api/books`, {
+               headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_BASE_URL}/api/favorites`, {
+               headers: { Authorization: `Bearer ${token}` },
+            }),
+         ]);
+
+         const booksData = booksRes.data.books;
+         const favoriteIds = favoritesRes.data.books?.map((book: BookData) => book._id) || [];
+
+         // Update stats with new data
+         const totalStats = calculateBookStats(booksData);
+         const favoriteStats = calculateBookStats(
+            booksData.filter((book: BookData) => favoriteIds.includes(book._id))
+         );
+
+         setBookStats(totalStats);
+         setFavoriteBookStats(favoriteStats);
+      } catch (error) {
+         console.error('Error updating favorites:', error);
+         alert('Failed to update favorite status');
       }
    };
 
@@ -117,20 +143,23 @@ const BooksTable = () => {
       };
    };
 
-   const [colDefs] = useState<ColDef<BookData>[]>([
+   const colDefs: ColDef<BookData>[] = [
       {
          field: 'thumbnail',
          headerName: 'Cover',
+         width: 100,
          autoHeight: true,
+         hide: window.innerWidth < 768,
+         cellStyle: { lineHeight: '1.2' },
          cellRenderer: (params: { value: string }) => {
-            const fallbackImage = 'https://dummyimage.com/100x100/cccccc/ffffff.png&text=No+Image';
+            const fallbackImage = 'https://dummyimage.com/60x90/cccccc/ffffff.png&text=No+Image';
             if (!params.value) {
                return (
                   <div className="flex items-center justify-center h-full">
                      <img
                         src={fallbackImage}
                         alt="No image available"
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-[40px] h-[60px] object-cover rounded shadow-md"
                      />
                   </div>
                );
@@ -140,7 +169,7 @@ const BooksTable = () => {
                   <img
                      src={params.value}
                      alt="Book Cover"
-                     className="w-10 h-10 rounded-full object-cover"
+                     className="w-[40px] h-[60px] object-cover rounded shadow-md"
                      onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
                         const img = e.target as HTMLImageElement;
                         img.onerror = null;
@@ -151,18 +180,25 @@ const BooksTable = () => {
             );
          },
       },
-      { field: 'title', flex: 2, cellStyle: { lineHeight: '1.2' } },
+      {
+         field: 'title',
+         flex: 2,
+         cellStyle: { lineHeight: '1.2' },
+      },
       {
          field: 'authors',
-         headerName: 'Authors',
+         headerName: 'Author',
          flex: 2,
+         cellStyle: { lineHeight: '1.2' },
          valueFormatter: params => {
             return params.value.join(', ');
          },
       },
       {
          field: 'publishedDate',
-         headerName: 'Published Date',
+         headerName: 'Date Published',
+         hide: window.innerWidth < 768,
+         cellStyle: { lineHeight: '1.2' },
          valueFormatter: params => {
             const date = new Date(params.value);
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -171,16 +207,11 @@ const BooksTable = () => {
          },
       },
       {
-         field: 'pageCount',
-         headerName: 'Pages',
-         valueFormatter: params => {
-            return params.value ? params.value.toString() : 'N/A';
-         },
-      },
-      {
          field: 'categories',
-         headerName: 'Categories',
+         headerName: 'Category',
+         hide: window.innerWidth < 768,
          flex: 2,
+         cellStyle: { lineHeight: '1.2' },
          valueFormatter: params => {
             return params.value.join(', ');
          },
@@ -188,8 +219,12 @@ const BooksTable = () => {
       {
          field: 'description',
          headerName: 'Description',
+         hide: window.innerWidth < 768,
          flex: 3,
-         cellStyle: { lineHeight: '1.2' },
+         cellStyle: {
+            lineHeight: '1.2',
+            padding: '8px 0',
+         },
          wrapText: true,
          maxWidth: 400,
          tooltipField: 'description',
@@ -198,52 +233,46 @@ const BooksTable = () => {
             if (text && text.length > 200) {
                return text.substring(0, 200) + '...';
             }
-            return text || 'No description available';
+            return text;
          },
       },
       {
-         field: 'infoLink',
-         headerName: 'Info Link',
-         cellRenderer: (params: { value: string }) => (
-            <a
-               href={params.value}
-               target="_blank"
-               rel="noopener noreferrer"
-               className="text-blue-500 hover:text-blue-600"
-            >
-               View on Google Books
-            </a>
-         ),
+         headerName: 'Actions',
+         width: 120,
+         cellStyle: { lineHeight: '1.2' },
+         cellRenderer: (params: ICellRendererParams<BookData>) => {
+            const isFavorite = params.data?._id && favorites.includes(params.data._id);
+            return (
+               <button
+                  onClick={() => params.data?._id && handleAddToFavorites(params.data._id)}
+                  className={`p-2 rounded-full ${
+                     isFavorite
+                        ? 'bg-red-500 text-white hover:bg-red-600'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+               >
+                  <FaHeart className={`w-4 h-4 ${isFavorite ? 'text-white' : 'text-gray-700'}`} />
+               </button>
+            );
+         },
       },
-      {
-         headerName: 'Add to Favorites',
-         cellRenderer: (params: { data: BookData }) => (
-            <button
-               onClick={() => handleAddToFavorites(params.data._id)}
-               className={`p-2 rounded-full ${
-                  favorites.includes(params.data._id)
-                     ? 'bg-red-500 text-white'
-                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-               }`}
-            >
-               <FaHeart className="w-4 h-4" />
-            </button>
-         ),
-         cellStyle: { display: 'flex', alignItems: 'center' },
-      },
-   ]);
+   ];
 
    useEffect(() => {
       const fetchData = async () => {
          setLoading(true);
          try {
             const token = localStorage.getItem('token');
+            if (!token) {
+               console.error('No token found');
+               return;
+            }
 
             const [booksRes, favoritesRes] = await Promise.all([
-               axios.get('https://full-stack-saas-dashboard.onrender.com/api/books/', {
+               axios.get('/api/books', {
                   headers: { Authorization: `Bearer ${token}` },
                }),
-               axios.get('https://full-stack-saas-dashboard.onrender.com/api/favorites', {
+               axios.get('/api/favorites', {
                   headers: { Authorization: `Bearer ${token}` },
                }),
             ]);
@@ -284,110 +313,112 @@ const BooksTable = () => {
    }
 
    return (
-      <div className="flex flex-col min-h-[calc(100vh-4rem)] w-full bg-gray-900 text-white">
-         <div className="flex flex-col md:flex-row gap-2 py-2 md:py-3 h-full">
-            <div className="w-full md:w-1/4 space-y-2">
-               {/* SIDEBAR*/}
-               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600 ">
+      <div className="flex flex-col min-h-[calc(100vh-4rem)] w-full bg-gray-900 text-white py-4">
+         <div className="flex flex-col md:flex-row gap-4">
+            {/* Sidebar - Stats & Charts */}
+            <div className="w-full md:w-1/4 space-y-4">
+               {/* Stats Cards */}
+               <div className="bg-gray-800 rounded-lg p-4 border border-gray-600">
                   {/* Key Statistics */}
-                  <div className="grid grid-cols-3 gap-1 sm:gap-2 mb-2">
-                     <div className="bg-gray-700 rounded-lg p-2 text-center">
-                        <h4 className="text-xs sm:text-sm text-gray-400 mb-1">Total Books</h4>
-                        <p className="text-xl sm:text-2xl font-bold text-purple-500">
-                           {bookStats.count}
-                        </p>
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                     <div className="bg-gray-700 rounded-lg p-3 text-center">
+                        <h4 className="text-sm text-gray-400 mb-1">Total Books</h4>
+                        <p className="text-xl font-bold text-purple-500">{bookStats.count}</p>
                      </div>
-                     <div className="bg-gray-700 rounded-lg p-2 text-center">
-                        <h4 className="text-xs sm:text-sm text-gray-400 mb-1">Unique Authors</h4>
-                        <p className="text-xl sm:text-2xl font-bold text-pink-500">
-                           {bookStats.uniqueAuthors}
-                        </p>
+                     <div className="bg-gray-700 rounded-lg p-3 text-center">
+                        <h4 className="text-sm text-gray-400 mb-1">Unique Authors</h4>
+                        <p className="text-xl font-bold text-pink-500">{bookStats.uniqueAuthors}</p>
                      </div>
-                     <div className="bg-gray-700 rounded-lg p-2 text-center">
-                        <h4 className="text-xs sm:text-sm text-gray-400 mb-1">Avg Pages</h4>
-                        <p className="text-xl sm:text-2xl font-bold text-green-500">
+                     <div className="bg-gray-700 rounded-lg p-3 text-center">
+                        <h4 className="text-sm text-gray-400 mb-1">Avg Pages</h4>
+                        <p className="text-xl font-bold text-green-500">
                            {Math.round(bookStats.avgPages)}
                         </p>
                      </div>
                   </div>
 
-                  {/* Line Chart */}
-                  <div className="bg-gray-700 rounded-lg p-2 mb-2">
-                     <h4 className="text-sm sm:text-base font-semibold text-white mb-2 text-center">
-                        Year Distribution
-                     </h4>
-                     <div className="h-40 sm:h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                           <LineChart
-                              data={Object.entries(bookStats.yearDistribution)}
-                              margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
-                           >
-                              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                              <XAxis dataKey="0" stroke="#9CA3AF" />
-                              <YAxis stroke="#9CA3AF" />
-                              <Tooltip
-                                 contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
-                                 labelStyle={{ color: '#9CA3AF' }}
-                              />
-                              <Legend />
-                              <Line
-                                 type="monotone"
-                                 dataKey="1"
-                                 stroke="#8B5CF6"
-                                 strokeWidth={2}
-                                 dot={{ fill: '#8B5CF6', r: 4 }}
-                                 name="Number of Books"
-                              />
-                           </LineChart>
-                        </ResponsiveContainer>
+                  {/* Charts */}
+                  <div className="space-y-4">
+                     {/* Year Distribution Chart */}
+                     <div className="bg-gray-700 rounded-lg p-3">
+                        <h4 className="text-sm font-semibold text-white mb-2 text-center">
+                           Year Distribution
+                        </h4>
+                        <div className="h-40">
+                           <ResponsiveContainer width="100%" height="100%">
+                              <LineChart
+                                 data={Object.entries(bookStats.yearDistribution)}
+                                 margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                              >
+                                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                 <XAxis dataKey="0" stroke="#9CA3AF" />
+                                 <YAxis stroke="#9CA3AF" />
+                                 <Tooltip
+                                    contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
+                                    labelStyle={{ color: '#9CA3AF' }}
+                                 />
+                                 <Legend />
+                                 <Line
+                                    type="monotone"
+                                    dataKey="1"
+                                    stroke="#8B5CF6"
+                                    strokeWidth={2}
+                                    dot={{ fill: '#8B5CF6', r: 4 }}
+                                    name="Number of Books"
+                                 />
+                              </LineChart>
+                           </ResponsiveContainer>
+                        </div>
                      </div>
-                  </div>
 
-                  {/* Bar Chart */}
-                  <div className="bg-gray-700 rounded-lg p-2">
-                     <h4 className="text-sm sm:text-base font-semibold text-white mb-2 text-center">
-                        Performance Comparison
-                     </h4>
-                     <div className="h-40 sm:h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                           <BarChart
-                              data={[
-                                 {
-                                    name: 'All Books',
-                                    authors: bookStats.uniqueAuthors,
-                                    pages: bookStats.avgPages,
-                                 },
-                                 {
-                                    name: 'Favorites',
-                                    authors: favoriteBookStats.uniqueAuthors,
-                                    pages: favoriteBookStats.avgPages,
-                                 },
-                              ]}
-                              margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
-                           >
-                              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                              <XAxis dataKey="name" stroke="#9CA3AF" />
-                              <YAxis stroke="#9CA3AF" />
-                              <Tooltip
-                                 contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
-                                 labelStyle={{ color: '#9CA3AF' }}
-                              />
-                              <Legend />
-                              <Bar dataKey="authors" name="Unique Authors" fill="#8B5CF6" />
-                              <Bar dataKey="pages" name="Average Pages" fill="#EC4899" />
-                           </BarChart>
-                        </ResponsiveContainer>
+                     {/* Performance Comparison Chart */}
+                     <div className="bg-gray-700 rounded-lg p-3">
+                        <h4 className="text-sm font-semibold text-white mb-2 text-center">
+                           Performance Comparison
+                        </h4>
+                        <div className="h-40">
+                           <ResponsiveContainer width="100%" height="100%">
+                              <BarChart
+                                 data={[
+                                    {
+                                       name: 'All Books',
+                                       authors: bookStats.uniqueAuthors,
+                                       pages: bookStats.avgPages,
+                                    },
+                                    {
+                                       name: 'Favorites',
+                                       authors: favoriteBookStats.uniqueAuthors,
+                                       pages: favoriteBookStats.avgPages,
+                                    },
+                                 ]}
+                                 margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                              >
+                                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                 <XAxis dataKey="name" stroke="#9CA3AF" />
+                                 <YAxis stroke="#9CA3AF" />
+                                 <Tooltip
+                                    contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
+                                    labelStyle={{ color: '#9CA3AF' }}
+                                 />
+                                 <Legend />
+                                 <Bar dataKey="authors" name="Unique Authors" fill="#8B5CF6" />
+                                 <Bar dataKey="pages" name="Average Pages" fill="#EC4899" />
+                              </BarChart>
+                           </ResponsiveContainer>
+                        </div>
                      </div>
                   </div>
                </div>
+
                {/* User Favorites Section */}
-               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600 h-[400px]">
+               <div className="bg-gray-800 rounded-lg p-4 border border-gray-600">
                   <BooksDataCard title="Your Favorites" stats={favoriteBookStats} />
                </div>
             </div>
 
-            <div className="w-full md:w-2/3 mt-2 md:mt-0 flex-1">
-               <div className="ag-theme-quartz h-[400px] md:h-full w-full border border-gray-700 rounded-lg">
+            {/* Books Grid */}
+            <div className="w-full md:w-3/4">
+               <div className="ag-theme-quartz h-[400px] md:h-[calc(100vh-4rem)] w-full border border-gray-700 rounded-lg">
                   <AgGridReact
                      rowData={books}
                      columnDefs={colDefs}

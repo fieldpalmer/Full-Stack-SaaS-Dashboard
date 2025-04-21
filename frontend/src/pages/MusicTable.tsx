@@ -60,10 +60,10 @@ const MusicTable = () => {
             }
 
             const [musicRes, favoritesRes] = await Promise.all([
-               axios.get('https://full-stack-saas-dashboard.onrender.com/api/music', {
+               axios.get(`${API_BASE_URL}/api/music`, {
                   headers: { Authorization: `Bearer ${token}` },
                }),
-               axios.get('https://full-stack-saas-dashboard.onrender.com/api/favorites', {
+               axios.get(`${API_BASE_URL}/api/favorites`, {
                   headers: { Authorization: `Bearer ${token}` },
                }),
             ]);
@@ -141,7 +141,8 @@ const MusicTable = () => {
       {
          field: 'image',
          headerName: '',
-         width: 60,
+         width: 100,
+         cellStyle: { lineHeight: '1.2' },
          cellRenderer: (params: ICellRendererParams<MusicData>) => {
             return (
                <div className="flex items-center justify-center h-full">
@@ -161,11 +162,14 @@ const MusicTable = () => {
          field: 'name',
          headerName: 'Name',
          flex: 1,
+         cellStyle: { lineHeight: '1.2' },
       },
       {
          field: 'listeners',
          headerName: 'Listeners',
+         hide: window.innerWidth < 768,
          width: 120,
+         cellStyle: { lineHeight: '1.2' },
          valueFormatter: params => {
             const value = params.value as number;
             if (value >= 1000000) {
@@ -180,7 +184,9 @@ const MusicTable = () => {
       {
          field: 'playcount',
          headerName: 'Play Count',
+         hide: window.innerWidth < 768,
          width: 120,
+         cellStyle: { lineHeight: '1.2' },
          valueFormatter: params => {
             const value = params.value as number;
             if (value >= 1000000) {
@@ -195,13 +201,15 @@ const MusicTable = () => {
       {
          field: 'url',
          headerName: 'URL',
+         hide: window.innerWidth < 768,
          width: 100,
+         cellStyle: { lineHeight: '1.2' },
          cellRenderer: (params: ICellRendererParams<MusicData>) => {
             const url = params.data?.url;
             if (!url) return null;
             return (
                <a
-                  href={url as string}
+                  href={url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:text-blue-400"
@@ -214,8 +222,9 @@ const MusicTable = () => {
       {
          headerName: 'Actions',
          width: 120,
+         cellStyle: { lineHeight: '1.2' },
          cellRenderer: (params: ICellRendererParams<MusicData>) => {
-            const isFavorite = favorites.some(m => m === params.data?._id);
+            const isFavorite = params.data?._id && favorites.includes(params.data._id);
             return (
                <button
                   onClick={() => params.data?._id && handleToggleFavorite('music', params.data._id)}
@@ -235,17 +244,67 @@ const MusicTable = () => {
    const handleToggleFavorite = async (type: string, musicId: string) => {
       try {
          const token = localStorage.getItem('token');
-         await axios.post(
-            `https://full-stack-saas-dashboard.onrender.com/api/favorites/${type}/${musicId}`,
-            {},
-            {
+         if (favorites.includes(musicId)) {
+            await axios.delete(`${API_BASE_URL}/api/favorites/${type}/${musicId}`, {
                headers: { Authorization: `Bearer ${token}` },
-            }
-         );
-         if (type === 'music') {
+            });
+            setFavorites(prev => prev.filter(id => id !== musicId));
+         } else {
+            await axios.post(
+               `${API_BASE_URL}/api/favorites/${type}/${musicId}`,
+               {},
+               {
+                  headers: { Authorization: `Bearer ${token}` },
+               }
+            );
             setFavorites(prev => [...prev, musicId]);
          }
          alert('Favorite status updated!');
+
+         // Refresh stats after toggling favorite
+         const [musicRes, favoritesRes] = await Promise.all([
+            axios.get(`${API_BASE_URL}/api/music`, {
+               headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_BASE_URL}/api/favorites`, {
+               headers: { Authorization: `Bearer ${token}` },
+            }),
+         ]);
+
+         const musicData = musicRes.data.music || [];
+         const favoriteIds = favoritesRes.data.music?.map((track: MusicData) => track._id) || [];
+
+         const totalStats: MusicStats = {
+            totalArtists: musicData.length,
+            totalListeners: musicData.reduce(
+               (acc: number, artist: ArtistStats) => acc + artist.listeners,
+               0
+            ),
+            averageListeners:
+               musicData.reduce((acc: number, artist: ArtistStats) => acc + artist.listeners, 0) /
+                  musicData.length || 0,
+            topArtists: [...musicData].sort((a, b) => b.listeners - a.listeners).slice(0, 5),
+         };
+
+         const favoriteMusic = musicData.filter((track: MusicData) =>
+            favoriteIds.includes(track._id)
+         );
+         const favoriteStats: MusicStats = {
+            totalArtists: favoriteMusic.length,
+            totalListeners: favoriteMusic.reduce(
+               (acc: number, artist: ArtistStats) => acc + artist.listeners,
+               0
+            ),
+            averageListeners:
+               favoriteMusic.reduce(
+                  (acc: number, artist: ArtistStats) => acc + artist.listeners,
+                  0
+               ) / favoriteMusic.length || 0,
+            topArtists: [...favoriteMusic].sort((a, b) => b.listeners - a.listeners).slice(0, 5),
+         };
+
+         setMusicStats(totalStats);
+         setFavoriteMusicStats(favoriteStats);
       } catch (error) {
          console.error('Error toggling favorite:', error);
          alert('Failed to update favorite status');
@@ -261,22 +320,23 @@ const MusicTable = () => {
    }
 
    return (
-      <div className="flex flex-col min-h-[calc(100vh-4rem)] w-full bg-gray-900 text-white">
-         <div className="flex flex-col md:flex-row gap-2 py-2 md:py-3 h-full ">
-            <div className="w-full md:w-1/4 space-y-2">
-               {/* SIDEBAR*/}
-               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600 ">
+      <div className="flex flex-col min-h-[calc(100vh-4rem)] w-full bg-gray-900 text-white py-4">
+         <div className="flex flex-col md:flex-row gap-4">
+            {/* Sidebar - Stats & Charts */}
+            <div className="w-full md:w-1/4 space-y-4">
+               {/* Stats Cards */}
+               <div className="bg-gray-800 rounded-lg p-4 border border-gray-600">
                   {/* Key Statistics */}
-                  <div className="grid grid-cols-3 gap-1 sm:gap-2 mb-2">
-                     <div className="bg-gray-700 rounded-lg p-2 text-center">
-                        <h4 className="text-xs sm:text-sm text-gray-400 mb-1">Total Artists</h4>
-                        <p className="text-xl sm:text-2xl font-bold text-purple-500">
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                     <div className="bg-gray-700 rounded-lg p-3 text-center">
+                        <h4 className="text-sm text-gray-400 mb-1">Total Artists</h4>
+                        <p className="text-xl font-bold text-purple-500">
                            {musicStats.totalArtists}
                         </p>
                      </div>
-                     <div className="bg-gray-700 rounded-lg p-2 text-center">
-                        <h4 className="text-xs sm:text-sm text-gray-400 mb-1">Total Listeners</h4>
-                        <p className="text-xl sm:text-2xl font-bold text-pink-500">
+                     <div className="bg-gray-700 rounded-lg p-3 text-center">
+                        <h4 className="text-sm text-gray-400 mb-1">Total Listeners</h4>
+                        <p className="text-xl font-bold text-pink-500">
                            {musicStats.totalListeners >= 1000000
                               ? `${(musicStats.totalListeners / 1000000).toFixed(1)}M`
                               : musicStats.totalListeners >= 1000
@@ -284,9 +344,9 @@ const MusicTable = () => {
                               : musicStats.totalListeners}
                         </p>
                      </div>
-                     <div className="bg-gray-700 rounded-lg p-2 text-center">
-                        <h4 className="text-xs sm:text-sm text-gray-400 mb-1">Avg Listeners</h4>
-                        <p className="text-xl sm:text-2xl font-bold text-green-500">
+                     <div className="bg-gray-700 rounded-lg p-3 text-center">
+                        <h4 className="text-sm text-gray-400 mb-1">Avg Listeners</h4>
+                        <p className="text-xl font-bold text-green-500">
                            {Math.round(musicStats.averageListeners) >= 1000000
                               ? `${(Math.round(musicStats.averageListeners) / 1000000).toFixed(1)}M`
                               : Math.round(musicStats.averageListeners) >= 1000
@@ -296,83 +356,88 @@ const MusicTable = () => {
                      </div>
                   </div>
 
-                  {/* Line Chart */}
-                  <div className="bg-gray-700 rounded-lg p-2 mb-2">
-                     <h4 className="text-sm sm:text-base font-semibold text-white mb-2 text-center">
-                        Listener Distribution
-                     </h4>
-                     <div className="h-40 sm:h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                           <LineChart
-                              data={musicStats.topArtists}
-                              margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
-                           >
-                              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                              <XAxis dataKey="name" stroke="#9CA3AF" />
-                              <YAxis stroke="#9CA3AF" />
-                              <Tooltip
-                                 contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
-                                 labelStyle={{ color: '#9CA3AF' }}
-                              />
-                              <Legend />
-                              <Line
-                                 type="monotone"
-                                 dataKey="listeners"
-                                 stroke="#8B5CF6"
-                                 strokeWidth={2}
-                                 dot={{ fill: '#8B5CF6', r: 4 }}
-                                 name="Listeners"
-                              />
-                           </LineChart>
-                        </ResponsiveContainer>
+                  {/* Charts */}
+                  <div className="space-y-4">
+                     {/* Listener Distribution Chart */}
+                     <div className="bg-gray-700 rounded-lg p-3">
+                        <h4 className="text-sm font-semibold text-white mb-2 text-center">
+                           Listener Distribution
+                        </h4>
+                        <div className="h-40">
+                           <ResponsiveContainer width="100%" height="100%">
+                              <LineChart
+                                 data={musicStats.topArtists}
+                                 margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                              >
+                                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                 <XAxis dataKey="name" stroke="#9CA3AF" />
+                                 <YAxis stroke="#9CA3AF" />
+                                 <Tooltip
+                                    contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
+                                    labelStyle={{ color: '#9CA3AF' }}
+                                 />
+                                 <Legend />
+                                 <Line
+                                    type="monotone"
+                                    dataKey="listeners"
+                                    stroke="#8B5CF6"
+                                    strokeWidth={2}
+                                    dot={{ fill: '#8B5CF6', r: 4 }}
+                                    name="Listeners"
+                                 />
+                              </LineChart>
+                           </ResponsiveContainer>
+                        </div>
                      </div>
-                  </div>
 
-                  {/* Bar Chart */}
-                  <div className="bg-gray-700 rounded-lg p-2">
-                     <h4 className="text-sm sm:text-base font-semibold text-white mb-2 text-center">
-                        Performance Comparison
-                     </h4>
-                     <div className="h-40 sm:h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                           <BarChart
-                              data={[
-                                 {
-                                    name: 'All Artists',
-                                    listeners: musicStats.averageListeners,
-                                    tracks: musicStats.totalArtists,
-                                 },
-                                 {
-                                    name: 'Favorites',
-                                    listeners: favoriteMusicStats.averageListeners,
-                                    tracks: favoriteMusicStats.totalArtists,
-                                 },
-                              ]}
-                              margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
-                           >
-                              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                              <XAxis dataKey="name" stroke="#9CA3AF" />
-                              <YAxis stroke="#9CA3AF" />
-                              <Tooltip
-                                 contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
-                                 labelStyle={{ color: '#9CA3AF' }}
-                              />
-                              <Legend />
-                              <Bar dataKey="listeners" name="Average Listeners" fill="#8B5CF6" />
-                              <Bar dataKey="tracks" name="Total Artists" fill="#EC4899" />
-                           </BarChart>
-                        </ResponsiveContainer>
+                     {/* Performance Comparison Chart */}
+                     <div className="bg-gray-700 rounded-lg p-3">
+                        <h4 className="text-sm font-semibold text-white mb-2 text-center">
+                           Performance Comparison
+                        </h4>
+                        <div className="h-40">
+                           <ResponsiveContainer width="100%" height="100%">
+                              <BarChart
+                                 data={[
+                                    {
+                                       name: 'All Artists',
+                                       listeners: musicStats.averageListeners,
+                                       tracks: musicStats.totalArtists,
+                                    },
+                                    {
+                                       name: 'Favorites',
+                                       listeners: favoriteMusicStats.averageListeners,
+                                       tracks: favoriteMusicStats.totalArtists,
+                                    },
+                                 ]}
+                                 margin={{ top: 10, right: 20, left: 10, bottom: 5 }}
+                              >
+                                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                 <XAxis dataKey="name" stroke="#9CA3AF" />
+                                 <YAxis stroke="#9CA3AF" />
+                                 <Tooltip
+                                    contentStyle={{ backgroundColor: '#1F2937', border: 'none' }}
+                                    labelStyle={{ color: '#9CA3AF' }}
+                                 />
+                                 <Legend />
+                                 <Bar dataKey="listeners" name="Average Listeners" fill="#8B5CF6" />
+                                 <Bar dataKey="tracks" name="Total Artists" fill="#EC4899" />
+                              </BarChart>
+                           </ResponsiveContainer>
+                        </div>
                      </div>
                   </div>
                </div>
+
                {/* User Favorites Section */}
-               <div className="bg-gray-800 rounded-lg p-2 border border-gray-600 h-[400px]">
+               <div className="bg-gray-800 rounded-lg p-4 border border-gray-600">
                   <MusicDataCard title="Your Favorites" stats={favoriteMusicStats} />
                </div>
             </div>
 
-            <div className="w-full md:w-2/3 mt-2 md:mt-0 flex-1">
-               <div className="ag-theme-quartz h-[400px] md:h-full w-full border border-gray-600 rounded-lg">
+            {/* Music Grid */}
+            <div className="w-full md:w-3/4">
+               <div className="ag-theme-quartz h-[400px] md:h-[calc(100vh-4rem)] w-full border border-gray-700 rounded-lg">
                   <AgGridReact
                      rowData={music}
                      columnDefs={colDefs}
