@@ -17,7 +17,6 @@ import MusicDataCard from './stats/MusicDataCard';
 import BooksDataCard from './stats/BooksDataCard';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { useAuth } from '../context/AuthContext';
-import WelcomeModal from './WelcomeModal';
 import AuthModals from './AuthModals';
 
 // Configure axios defaults
@@ -40,7 +39,6 @@ const MyMedia = () => {
    const [totalMovies, setTotalMovies] = useState<Movie[]>([]);
    const [totalBooks, setTotalBooks] = useState<Book[]>([]);
    const [totalMusic, setTotalMusic] = useState<Music[]>([]);
-   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
    const [authModalOpen, setAuthModalOpen] = useState(false);
    const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
 
@@ -271,7 +269,6 @@ const MyMedia = () => {
 
    return (
       <div className="p-2 sm:p-6 min-h-[calc(100vh-4rem)] overflow-y-auto">
-         <WelcomeModal isOpen={showWelcomeModal} onClose={() => setShowWelcomeModal(false)} />
          <AuthModals
             isOpen={authModalOpen}
             onClose={() => setAuthModalOpen(false)}
@@ -308,7 +305,7 @@ const MyMedia = () => {
          </div>
          <hr className="border-t border-gray-700 mb-6 " />
          <h2 className="text-xl sm:text-2xl font-bold mb-6 mt-3 md:mt-0 text-white">
-            My Media - Analysis & Insights
+            TasteIQ - Analysis & Insights
          </h2>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="bg-gray-800 rounded-lg p-4 border border-gray-600 ">
@@ -420,7 +417,7 @@ const MyMedia = () => {
          <div className="space-y-4 sm:space-y-6">
             {/* MOVIES */}
             <div className="bg-gray-800 rounded-lg p-2 sm:p-6 border border-gray-600 ">
-               <div className="flex items-center justify-between mb-4">
+               <div className="flex items-center justify-between m-2">
                   <div className="flex items-center gap-3">
                      <FaFilm className="text-3xl text-cyan-400" />
                      <h3 className="text-xl font-semibold text-white">Movies</h3>
@@ -554,7 +551,7 @@ const MyMedia = () => {
 
             {/* BOOKS */}
             <div className="bg-gray-800 rounded-lg p-2 sm:p-6 border border-gray-600 ">
-               <div className="flex items-center justify-between mb-4">
+               <div className="flex items-center justify-between m-2">
                   <div className="flex items-center gap-3">
                      <FaBook className="text-3xl text-cyan-400" />
                      <h3 className="text-xl font-semibold text-white">Books</h3>
@@ -678,7 +675,7 @@ const MyMedia = () => {
 
             {/* MUSIC */}
             <div className="bg-gray-800 rounded-lg p-2 sm:p-6 border border-gray-600 ">
-               <div className="flex items-center justify-between mb-4">
+               <div className="flex items-center justify-between m-2">
                   <div className="flex items-center gap-3">
                      <FaMusic className="text-3xl text-cyan-400" />
                      <h3 className="text-xl font-semibold text-white">Music</h3>

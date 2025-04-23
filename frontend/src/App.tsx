@@ -10,35 +10,35 @@ import { useAuth } from './context/AuthContext';
 import { useEffect } from 'react';
 
 function AppContent() {
-     const { user, loading } = useAuth();
+   const { user, loading } = useAuth();
 
-     useEffect(() => {
-          if (!loading && !user) {
-               // Only create guest if explicitly needed
-               // createGuest();
-          }
-     }, [loading, user]);
+   useEffect(() => {
+      if (!loading && !user) {
+         // Only create guest if explicitly needed
+         // createGuest();
+      }
+   }, [loading, user]);
 
-     if (loading) {
-          return <div>Loading...</div>;
-     }
+   if (loading) {
+      return <div>Loading...</div>;
+   }
 
-     return (
-          <>
-               <Navbar />
-               <ScrollToTop />
-               <Routes>
-                    <Route path='/*' element={<Dashboard />} />
-                    {/* <Route path='/login' element={<Login />} /> */}
-                    {/* <Route path='/register' element={<Register />} /> */}
-                    <Route path='/contact' element={<Contact />} />
-                    <Route path='/dashboard/*' element={<Dashboard />} />
-               </Routes>
-               <Footer />
-          </>
-     );
+   return (
+      <>
+         <Navbar />
+         <ScrollToTop />
+         <Routes>
+            <Route path="/*" element={<Dashboard />} />
+            {/* <Route path='/login' element={<Login />} /> */}
+            {/* <Route path='/register' element={<Register />} /> */}
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/dashboard/*" element={<Dashboard />} />
+         </Routes>
+         <Footer />
+      </>
+   );
 }
 
 export default function App() {
-     return <AppContent />;
+   return <AppContent />;
 }

@@ -12,23 +12,12 @@ import {
 import { useAuth } from '../context/AuthContext';
 import AuthModals from './AuthModals';
 
-interface NavLink {
-   id: string;
-   title: string;
-}
-
 const Navbar = () => {
-   const [active, setActive] = useState<string>('/');
    const [toggle, setToggle] = useState<boolean>(false);
    const [userDropdown, setUserDropdown] = useState<boolean>(false);
    const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
    const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
    const { user, logout } = useAuth();
-
-   // const navLinks: NavLink[] = [
-   //      { id: '/dashboard', title: 'Home' },
-   //      { id: 'contact', title: 'Contact' }
-   // ];
 
    const handleAuthClick = (mode: 'login' | 'register') => {
       setAuthModalMode(mode);
@@ -44,23 +33,11 @@ const Navbar = () => {
                to="/"
                className="text-gradient text-4xl font-bold bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent"
             >
-               MT
+               TasteIQ
             </Link>
 
             {/* Desktop Navigation */}
             <ul className="list-none sm:flex hidden justify-end items-center flex-1">
-               {/* {navLinks.map((nav: NavLink) => (
-                              <li key={nav.id} onClick={() => setActive(nav.title)}>
-                                   <Link
-                                        to={`${nav.id}`}
-                                        className={`font-poppins font-normal cursor-pointer text-[16px] ${
-                                             active === nav.title ? 'text-blue-400' : 'text-gray-100'
-                                        } mr-10 hover:text-blue-400`}
-                                   >
-                                        {nav.title}
-                                   </Link>
-                              </li>
-                         ))} */}
                <div className="relative">
                   <button
                      onClick={() => setUserDropdown(!userDropdown)}
